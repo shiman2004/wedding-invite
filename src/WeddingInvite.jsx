@@ -15,9 +15,12 @@ const DATA = {
   weddingDate: new Date("2027-01-10T18:00:00"),
   dateParts: { day: "10", month: "January", year: "2027" },
   city: "DUBAI",
-  venueTitle: "Four Seasons Hotel Jumeirah",
+  venueTitle: "Four Seasons Hotel in Jumeirah,",
   venueSub: "Dana Ballroom",
   mapQuery: "Four Seasons Resort Dubai at Jumeirah Beach",
+  venueImg: "https://static.tildacdn.net/tild6462-3635-4461-a162-303965356266/Screenshot_2026-08-0.png",
+  venueTopFlower: "https://static.tildacdn.net/tild3935-6639-4836-b366-623864343762/Group_306.png",
+  venueBottomFlower: "https://static.tildacdn.net/tild3238-6635-4563-b336-356564353735/Group_305.png",
   rsvpBy: "30 November 2026",
   invitationGreeting: "Dear Friends and Family",
   invitationText: "Join us for an evening of love, laughter, duas, and unforgettable memories as we begin our forever.",
@@ -1434,6 +1437,155 @@ body {
   letter-spacing: 3px;
   color: var(--ink-soft);
 }
+
+/* ============================================================
+   AUTHENTIC TIMELESS GRACE VENUE & LOCATION SECTION
+   ============================================================ */
+.wi-venue-section {
+  position: relative;
+  padding: 55px 20px 48px;
+  text-align: center;
+  background: #FDF4EB;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+}
+
+.wi-venue-flower-top {
+  position: absolute;
+  top: 10px;
+  right: -25px;
+  width: 175px;
+  height: auto;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.95;
+}
+
+.wi-venue-script-title {
+  font-family: 'Imperial Script', 'Pinyon Script', cursive;
+  font-size: 56px;
+  color: #8A6B34;
+  line-height: 1;
+  font-weight: 400;
+  margin: 0 0 4px;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.wi-venue-flourish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px auto 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.wi-v-line {
+  width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8A6B34, transparent);
+}
+
+.wi-v-diamond {
+  font-size: 8px;
+  color: #8A6B34;
+}
+
+.wi-venue-city-text {
+  font-family: 'Cinzel', 'Rufina', Georgia, serif;
+  font-size: 15px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #725227;
+  font-weight: 600;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 2;
+}
+
+.wi-venue-title-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  color: #5C4425;
+  font-weight: 500;
+  line-height: 1.35;
+  position: relative;
+  z-index: 2;
+}
+
+.wi-venue-sub-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  color: #6E5330;
+  font-weight: 500;
+  margin-top: 2px;
+  position: relative;
+  z-index: 2;
+}
+
+.wi-venue-img-wrap {
+  position: relative;
+  margin: 30px auto 24px;
+  width: 100%;
+  max-width: 370px;
+  z-index: 2;
+}
+
+.wi-venue-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 14px 38px -8px rgba(110, 75, 30, 0.22);
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.wi-venue-flower-bottom {
+  position: absolute;
+  bottom: -24px;
+  left: -28px;
+  width: 195px;
+  height: auto;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.95;
+}
+
+.wi-venue-map-cta {
+  margin-top: 14px;
+  position: relative;
+  z-index: 4;
+}
+
+.wi-maps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  background: #FFFFFF;
+  border: 1px solid #D6C2A8;
+  border-radius: 28px;
+  color: #725227;
+  font-family: 'Cinzel', serif;
+  font-size: 11.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(140, 100, 60, 0.12);
+  transition: all 0.25s ease;
+}
+
+.wi-maps-btn:hover {
+  background: #FAF4EB;
+  border-color: #8A6B34;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(140, 100, 60, 0.2);
+}
 `;
 
 /* ------------------------------------------------------------------ */
@@ -2107,21 +2259,46 @@ export default function WeddingInvite() {
           </section>
 
           {/* ============================================================
-              LOCATION & VENUE
+              AUTHENTIC TIMELESS GRACE LOCATION & VENUE
              ============================================================ */}
-          <section className="wi-section">
-            <div className="wi-heading">Venue &amp; Location</div>
-            <h2 className="wi-script-title">Where &amp; When</h2>
-            <div className="wi-rule" />
-            <div className="wi-venue-city">{data.city}</div>
-            <div className="wi-venue-line1">{data.venueTitle}</div>
-            <div className="wi-venue-line2">{data.venueSub}</div>
-            <div className="wi-map">
-              <iframe
-                title="venue-map"
-                loading="lazy"
-                src={`https://www.google.com/maps?q=${encodeURIComponent(data.mapQuery)}&output=embed`}
+          <section className="wi-venue-section">
+            {/* Top-Right Decorative Flower Bouquet */}
+            <img className="wi-venue-flower-top" src={data.venueTopFlower || DATA.venueTopFlower} alt="" />
+
+            {/* Cursive Title & Diamond Flourish */}
+            <h2 className="wi-venue-script-title">Location</h2>
+            <div className="wi-venue-flourish">
+              <span className="wi-v-line" />
+              <span className="wi-v-diamond">❖</span>
+              <span className="wi-v-line" />
+            </div>
+
+            {/* City, Venue Title & Hall Subtitle */}
+            <div className="wi-venue-city-text">{data.city}</div>
+            <div className="wi-venue-title-text">{data.venueTitle}</div>
+            {data.venueSub && <div className="wi-venue-sub-text">{data.venueSub}</div>}
+
+            {/* Framed Luxury Venue Photo with Bottom-Left Overlapping Bouquet */}
+            <div className="wi-venue-img-wrap">
+              <img
+                className="wi-venue-img"
+                src={data.venueImg || data.venue_image_url || DATA.venueImg}
+                alt={data.venueTitle}
               />
+              <img className="wi-venue-flower-bottom" src={data.venueBottomFlower || DATA.venueBottomFlower} alt="" />
+            </div>
+
+            {/* Open in Maps Button */}
+            <div className="wi-venue-map-cta">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.mapQuery)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="wi-maps-btn"
+              >
+                <span>Open In Maps</span>
+                <span>↗</span>
+              </a>
             </div>
           </section>
 

@@ -13,6 +13,7 @@ const DEFAULT_INVITE = {
   venue_title: "Four Seasons Hotel Jumeirah",
   venue_sub: "Dana Ballroom",
   map_query: "Four Seasons Resort Dubai at Jumeirah Beach",
+  venue_image_url: "https://static.tildacdn.net/tild6462-3635-4461-a162-303965356266/Screenshot_2026-08-0.png",
   verse_text: "And We created you in pairs.",
   verse_ref: "Surah An-Naba 78:8",
   rsvp_deadline: "30 November 2026",
@@ -177,6 +178,7 @@ export default function AdminPanel({ onBackToInvite }) {
         venue_title: formData.venue_title || "",
         venue_sub: formData.venue_sub || "",
         map_query: formData.map_query || "",
+        venue_image_url: formData.venue_image_url || formData.venueImg || DEFAULT_INVITE.venue_image_url,
         verse_text: formData.verse_text || "",
         verse_ref: formData.verse_ref || "",
         rsvp_deadline: formData.rsvp_deadline || "",
@@ -518,6 +520,26 @@ export default function AdminPanel({ onBackToInvite }) {
                       onChange={(e) => handleChange("venue_sub", e.target.value)}
                       placeholder="e.g. Dana Ballroom"
                     />
+                  </div>
+
+                  <div className="ap-field">
+                    <label>Venue Photo Image URL</label>
+                    <input
+                      type="text"
+                      value={formData.venue_image_url || formData.venueImg || ""}
+                      onChange={(e) => handleChange("venue_image_url", e.target.value)}
+                      placeholder="e.g. https://.../venue.png"
+                    />
+                    <small>Luxury photo/illustration of the wedding venue.</small>
+                    {(formData.venue_image_url || formData.venueImg || DEFAULT_INVITE.venue_image_url) && (
+                      <div style={{ marginTop: "10px", width: "100%", maxWidth: "320px" }}>
+                        <img
+                          src={formData.venue_image_url || formData.venueImg || DEFAULT_INVITE.venue_image_url}
+                          alt="Venue preview"
+                          style={{ width: "100%", borderRadius: "10px", border: "1px solid #D6C2A8", display: "block" }}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="ap-field">
