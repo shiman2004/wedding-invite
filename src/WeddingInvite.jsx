@@ -169,22 +169,30 @@ body {
 
 .wei-envelope-holder {
   position: relative;
-  width: min(90vw, 420px);
-  aspect-ratio: 608 / 1080;
-  max-height: 88vh;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-  border-radius: 6px;
+  border-radius: 0;
+  box-shadow: none;
+  background: #F9F0E0;
 }
 
 .wei-envelope-media {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+}
+
+@media (max-width: 600px) {
+  .wei-envelope-media {
+    object-fit: cover;
+  }
 }
 
 .wei-cover-img {
