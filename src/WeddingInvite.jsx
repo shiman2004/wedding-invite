@@ -405,7 +405,7 @@ body {
 
 .wi-hero-eyebrow {
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 15px;
+  font-size: 16px;
   font-style: italic;
   font-weight: 500;
   letter-spacing: 1.5px;
@@ -416,7 +416,7 @@ body {
 
 .wi-hero-occasion {
   font-family: 'Pinyon Script', 'Alex Brush', cursive;
-  font-size: 40px;
+  font-size: 38px;
   color: #63431D;
   margin: 0 0 2px;
   line-height: 1.1;
@@ -459,10 +459,10 @@ body {
 }
 
 .wi-hero-names {
-  font-family: 'Great Vibes', 'Alex Brush', cursive;
-  font-size: 54px;
-  line-height: 1.05;
-  color: #5C411D;
+  font-family: 'Imperial Script', cursive;
+  font-size: 64px;
+  line-height: 0.95;
+  color: #4D3212;
   font-weight: 400;
   margin-top: 2px;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 18px rgba(255, 245, 225, 0.95);
@@ -473,16 +473,16 @@ body {
 }
 
 .wi-hero-amp {
-  font-family: 'Great Vibes', 'Alex Brush', cursive;
-  font-size: 32px;
+  font-family: 'Imperial Script', cursive;
+  font-size: 36px;
   display: block;
   color: #8A6B34;
-  margin: -6px 0 -4px;
+  margin: -4px 0 -4px;
 }
 
 .wi-scroll-cue {
   position: absolute;
-  bottom: 22px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -491,19 +491,21 @@ body {
 
 .wi-scroll-cue span {
   display: block;
-  font-family: 'Pinyon Script', 'Great Vibes', cursive;
-  font-size: 26px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  font-style: italic;
+  letter-spacing: 1px;
   color: #725227;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
 }
 
 .wi-chevron {
-  width: 9px;
-  height: 9px;
-  border-right: 1.8px solid #725227;
-  border-bottom: 1.8px solid #725227;
-  transform: rotate(45deg);
+  width: 10px;
+  height: 10px;
+  border-right: 1.6px solid #725227;
+  border-bottom: 1.6px solid #725227;
+  transform: rotate(45deg) translateX(-50%);
   margin: 0 auto;
   animation: wi-bob 1.8s ease-in-out infinite;
 }
@@ -1889,10 +1891,10 @@ export default function WeddingInvite() {
           const wDate = new Date(inv.wedding_date);
           const dateParts = !isNaN(wDate.getTime())
             ? {
-                day: String(wDate.getDate()),
-                month: wDate.toLocaleString("en-US", { month: "long" }),
-                year: String(wDate.getFullYear()),
-              }
+              day: String(wDate.getDate()),
+              month: wDate.toLocaleString("en-US", { month: "long" }),
+              year: String(wDate.getFullYear()),
+            }
             : DATA.dateParts;
 
           setData((prev) => ({
