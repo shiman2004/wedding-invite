@@ -153,7 +153,7 @@ export default function AdminPanel({ onBackToInvite }) {
 
   // Save changes to Supabase
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setSaving(true);
     setSaveSuccess(false);
     setErrorMessage("");
@@ -163,37 +163,78 @@ export default function AdminPanel({ onBackToInvite }) {
         throw new Error("Supabase is not configured in .env");
       }
 
-      // 1. Update/Upsert Invitation
-      const { data: invData, error: invError } = await supabase
-        .from("invitations")
-        .upsert(
-          {
-            ...formData,
-            wedding_date: new Date(formData.wedding_date).toISOString(),
-            slug: formData.slug || slug,
-          },
-          { onConflict: "slug" }
-        )
-        .select()
-        .single();
+      const targetSlug = (formData.slug || slug || "ayash-farwin").trim();
 
-      if (invError) throw invError;
+      const payload = {
+        slug: targetSlug,
+        groom_name: formData.groom_name || "",
+        bride_name: formData.bride_name || "",
+        groom_parents: formData.groom_parents || "",
+        bride_parents: formData.bride_parents || "",
+        occasion: formData.occasion || "",
+        wedding_date: formData.wedding_date ? new Date(formData.wedding_date).toISOString() : new Date().toISOString(),
+        city: formData.city || "",
+        venue_title: formData.venue_title || "",
+        venue_sub: formData.venue_sub || "",
+        map_query: formData.map_query || "",
+        verse_text: formData.verse_text || "",
+        verse_ref: formData.verse_ref || "",
+        rsvp_deadline: formData.rsvp_deadline || "",
+        audio_url: formData.audio_url || "",
+        envelope_video_url: formData.envelope_video_url || "",
+        hero_video_url: formData.hero_video_url || "",
+        dress_code: formData.dress_code || DEFAULT_INVITE.dress_code,
+      };
+
+      let invData = null;
+
+      // If we already have the record's primary ID, update by ID (allows changing slug freely!)
+      if (formData.id) {
+        const { data: updated, error: updateErr } = await supabase
+          .from("invitations")
+          .update(payload)
+          .eq("id", formData.id)
+          .select()
+          .single();
+
+        if (updateErr) throw updateErr;
+        invData = updated;
+      } else {
+        // Fallback: check if slug already exists or insert new
+        const { data: upserted, error: upsertErr } = await supabase
+          .from("invitations")
+          .upsert(payload, { onConflict: "slug" })
+          .select()
+          .single();
+
+        if (upsertErr) throw upsertErr;
+        invData = upserted;
+      }
+
+      if (invData) {
+        setFormData((prev) => ({
+          ...prev,
+          id: invData.id,
+          slug: invData.slug,
+        }));
+        setSlug(invData.slug);
+      }
 
       // 2. Update Timeline Events
       if (invData?.id) {
-        // Remove old events and re-insert updated list
         await supabase.from("timeline_events").delete().eq("invitation_id", invData.id);
 
         if (timeline.length > 0) {
           const eventsToInsert = timeline.map((ev, i) => ({
             invitation_id: invData.id,
-            time: ev.time,
-            title: ev.title,
-            illustration_url: ev.illustration_url,
+            time: ev.time || "",
+            title: ev.title || "",
+            illustration_url: ev.illustration_url || "",
             img_side: ev.img_side || (i % 2 === 0 ? "left" : "right"),
             order_index: i,
           }));
-          await supabase.from("timeline_events").insert(eventsToInsert);
+          const { error: tlErr } = await supabase.from("timeline_events").insert(eventsToInsert);
+          if (tlErr) console.warn("Timeline insert error:", tlErr.message);
         }
       }
 
