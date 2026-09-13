@@ -394,18 +394,19 @@ body {
 .wi-hero-content {
   position: relative;
   z-index: 4;
-  margin-top: 155px;
+  margin-top: clamp(140px, 20vh, 185px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  width: 90%;
+  width: 82%;
+  max-width: 340px;
 }
 
 .wi-hero-eyebrow {
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 16px;
+  font-size: 14px;
   font-style: italic;
   font-weight: 500;
   letter-spacing: 1.5px;
@@ -416,11 +417,12 @@ body {
 
 .wi-hero-occasion {
   font-family: 'Pinyon Script', 'Alex Brush', cursive;
-  font-size: 38px;
+  font-size: clamp(28px, 6.5vw, 36px);
   color: #63431D;
   margin: 0 0 2px;
   line-height: 1.1;
   font-weight: 400;
+  white-space: nowrap;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 245, 225, 0.9);
 }
 
@@ -429,11 +431,11 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin: 2px 0 4px;
+  margin: 2px 0 6px;
 }
 
 .wi-flourish-line {
-  width: 32px;
+  width: 28px;
   height: 1px;
   background: linear-gradient(90deg, transparent, #8A6B34, transparent);
   position: relative;
@@ -458,26 +460,30 @@ body {
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 }
 
-.wi-hero-names {
-  font-family: 'Imperial Script', cursive;
-  font-size: 64px;
-  line-height: 0.95;
-  color: #4D3212;
-  font-weight: 400;
-  margin-top: 2px;
+.wi-hero-names-inline {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  white-space: nowrap;
+  margin-top: 4px;
+  font-family: 'Great Vibes', 'Alex Brush', cursive;
+  font-size: clamp(34px, 8.5vw, 46px);
+  color: #5C411D;
+  line-height: 1;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 18px rgba(255, 245, 225, 0.95);
 }
 
-.wi-hero-name {
-  display: block;
+.wi-hero-name-inline {
+  display: inline;
 }
 
-.wi-hero-amp {
-  font-family: 'Imperial Script', cursive;
-  font-size: 36px;
-  display: block;
+.wi-hero-amp-inline {
+  font-size: 0.75em;
   color: #8A6B34;
-  margin: -4px 0 -4px;
+  font-family: 'Great Vibes', 'Alex Brush', cursive;
+  margin: 0 2px;
 }
 
 .wi-scroll-cue {
@@ -2123,10 +2129,10 @@ export default function WeddingInvite() {
                 <span className="wi-hero-of">of</span>
                 <span className="wi-flourish-line" />
               </div>
-              <div className="wi-hero-names">
-                <span className="wi-hero-name">{data.partnerA}</span>
-                <span className="wi-hero-amp">&amp;</span>
-                <span className="wi-hero-name">{data.partnerB}</span>
+              <div className="wi-hero-names-inline">
+                <span className="wi-hero-name-inline">{data.partnerA}</span>
+                <span className="wi-hero-amp-inline">&amp;</span>
+                <span className="wi-hero-name-inline">{data.partnerB}</span>
               </div>
             </div>
 
