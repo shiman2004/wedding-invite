@@ -115,15 +115,9 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background: #F3EAE0;
+  background: #F9F0E0;
   padding: 0;
   box-sizing: border-box;
-}
-
-@media (min-width: 600px) {
-  .wi-root {
-    padding: 30px 16px;
-  }
 }
 
 .wi-frame {
@@ -132,15 +126,10 @@ body {
   background: var(--card-bg);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 25px 60px -15px rgba(62, 49, 35, 0.3);
+  box-shadow: 0 0 50px rgba(62, 49, 35, 0.12);
   border-radius: 0;
   min-height: 100vh;
-}
-
-@media (min-width: 600px) {
-  .wi-frame {
-    border-radius: 8px;
-  }
+  margin: 0 auto;
 }
 
 /* ============================================================
@@ -314,7 +303,8 @@ body {
 .wi-hero {
   position: relative;
   width: 100%;
-  height: 780px;
+  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
   background-color: #FDF4EB;
   display: flex;
