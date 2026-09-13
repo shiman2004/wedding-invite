@@ -1866,20 +1866,25 @@ export default function WeddingInvite() {
     if (!isSupabaseConfigured || !supabase) return;
 
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get("invite") || "ayash-farwin";
+    const slug = params.get("invite");
 
     async function fetchInvitation() {
       try {
-        const { data: inv, error } = await supabase
-          .from("invitations")
-          .select("*")
-          .eq("slug", slug)
-          .single();
+        let query = supabase.from("invitations").select("*");
+        if (slug) {
+          query = query.eq("slug", slug);
+        } else {
+          query = query.order("created_at", { ascending: false }).limit(1);
+        }
+
+        const { data: invList, error } = await query;
 
         if (error) {
           console.warn("Supabase load fallback:", error.message);
           return;
         }
+
+        const inv = Array.isArray(invList) ? invList[0] : invList;
 
         if (inv) {
           setInvitationId(inv.id);
@@ -2058,6 +2063,7 @@ export default function WeddingInvite() {
             ref={videoRef}
             className="wei-envelope-media"
             src={`${data.envelopeVideo}#t=0.001`}
+            poster="/Envelope%20Cover%20Photo%203.png"
             muted
             playsInline
             preload="auto"
