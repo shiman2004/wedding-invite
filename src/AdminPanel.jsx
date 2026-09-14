@@ -19,13 +19,109 @@ const DEFAULT_INVITE = {
   rsvp_deadline: "30 November 2026",
   audio_url: "https://pub-4dc8201144ca418fb604349c73e8c724.r2.dev/Einaudi_%20Divenire%20(1)%20(1).mp3",
   envelope_video_url: "/Envelope%20Cover%20Video%202.mp4",
+  envelope_image_url: "/Envelope%20Cover%20Photo%203.png",
   hero_video_url: "https://pub-4dc8201144ca418fb604349c73e8c724.r2.dev/Newbeautifulvideo.mp4",
+  bismillah_img: "https://static.tildacdn.net/tild3561-3634-4134-b365-373438636335/Group_269_1.png",
+  arch_frame_img: "https://static.tildacdn.net/tild6665-3331-4665-b937-616331303830/noroot.png",
+  arch_floral_left: "https://static.tildacdn.net/tild3337-3937-4162-b935-356566376533/ChatGPT_Image_Jul_5_.png",
+  arch_floral_right: "https://static.tildacdn.net/tild6635-3066-4365-b962-353461316561/Group_304-Photoroom.png",
+  floral_left: "https://static.tildacdn.net/tild3238-6635-4563-b336-356564353735/Group_305.png",
+  floral_right: "https://static.tildacdn.net/tild3935-6639-4836-b366-623864343762/Group_306.png",
+  venue_top_flower: "https://static.tildacdn.net/tild3935-6639-4836-b366-623864343762/Group_306.png",
+  venue_bottom_flower: "https://static.tildacdn.net/tild3238-6635-4563-b336-356564353735/Group_305.png",
+  timeline_flourish: "https://static.tildacdn.net/tild6262-3636-4964-a632-666535323935/ChatGPT_Image_Jul_24.png",
   dress_code: {
     title: "Soft Pastel Shades",
     note: "We kindly invite our guests to dress in soft pastel shades. Please avoid wearing beige, as it is reserved for the bride and groom.",
     palette: ["#F6E7D8", "#E8D5C4", "#D8E2DC", "#FFE5D9", "#ECE4DB"],
   },
 };
+
+function ImageUploadField({ label, description, value, defaultValue, onChange }) {
+  const fileInputRef = React.useRef(null);
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        onChange(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const previewSrc = value || defaultValue;
+
+  return (
+    <div className="ap-image-field-card">
+      <div className="ap-image-field-main">
+        <label className="ap-image-title">{label}</label>
+        {description && <div className="ap-image-desc-text">{description}</div>}
+
+        <div className="ap-image-row">
+          <input
+            type="text"
+            className="ap-image-input"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Image URL (https://... or /path.png)"
+          />
+          <button
+            type="button"
+            className="ap-img-upload-btn"
+            onClick={() => fileInputRef.current?.click()}
+            title="Upload image from device"
+          >
+            📁 Pick Local File
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleFile}
+          />
+        </div>
+
+        <div className="ap-image-actions">
+          {defaultValue && value !== defaultValue && (
+            <button
+              type="button"
+              className="ap-img-reset-btn"
+              onClick={() => onChange(defaultValue)}
+            >
+              ↺ Reset Default
+            </button>
+          )}
+          {value && (
+            <button
+              type="button"
+              className="ap-img-clear-btn"
+              onClick={() => onChange("")}
+            >
+              &times; Clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="ap-image-thumb-box">
+        {previewSrc ? (
+          <img
+            src={previewSrc}
+            alt={label}
+            onError={(e) => {
+              e.target.style.opacity = "0.2";
+            }}
+          />
+        ) : (
+          <div className="ap-no-img-text">No Image</div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminPanel({ onBackToInvite }) {
   const [activeTab, setActiveTab] = useState("couple"); // couple | date | venue | media | timeline | rsvps | dress
@@ -65,10 +161,24 @@ export default function AdminPanel({ onBackToInvite }) {
             }
           }
 
+          const mediaAssets = inv.media_assets || {};
+
           setFormData({
+            ...DEFAULT_INVITE,
             ...inv,
             wedding_date: dateStr || DEFAULT_INVITE.wedding_date,
             dress_code: inv.dress_code || DEFAULT_INVITE.dress_code,
+            envelope_image_url: inv.envelope_image_url || mediaAssets.envelope_image_url || DEFAULT_INVITE.envelope_image_url,
+            venue_image_url: inv.venue_image_url || mediaAssets.venue_image_url || DEFAULT_INVITE.venue_image_url,
+            bismillah_img: inv.bismillah_img || mediaAssets.bismillah_img || DEFAULT_INVITE.bismillah_img,
+            arch_frame_img: inv.arch_frame_img || mediaAssets.arch_frame_img || DEFAULT_INVITE.arch_frame_img,
+            arch_floral_left: inv.arch_floral_left || mediaAssets.arch_floral_left || DEFAULT_INVITE.arch_floral_left,
+            arch_floral_right: inv.arch_floral_right || mediaAssets.arch_floral_right || DEFAULT_INVITE.arch_floral_right,
+            floral_left: inv.floral_left || mediaAssets.floral_left || DEFAULT_INVITE.floral_left,
+            floral_right: inv.floral_right || mediaAssets.floral_right || DEFAULT_INVITE.floral_right,
+            venue_top_flower: inv.venue_top_flower || mediaAssets.venue_top_flower || DEFAULT_INVITE.venue_top_flower,
+            venue_bottom_flower: inv.venue_bottom_flower || mediaAssets.venue_bottom_flower || DEFAULT_INVITE.venue_bottom_flower,
+            timeline_flourish: inv.timeline_flourish || mediaAssets.timeline_flourish || DEFAULT_INVITE.timeline_flourish,
           });
 
           // 2. Fetch Timeline Events
@@ -166,7 +276,21 @@ export default function AdminPanel({ onBackToInvite }) {
 
       const targetSlug = (formData.slug || slug || "ayash-farwin").trim();
 
-      const payload = {
+      const mediaAssets = {
+        envelope_image_url: formData.envelope_image_url || DEFAULT_INVITE.envelope_image_url,
+        venue_image_url: formData.venue_image_url || DEFAULT_INVITE.venue_image_url,
+        bismillah_img: formData.bismillah_img || DEFAULT_INVITE.bismillah_img,
+        arch_frame_img: formData.arch_frame_img || DEFAULT_INVITE.arch_frame_img,
+        arch_floral_left: formData.arch_floral_left || DEFAULT_INVITE.arch_floral_left,
+        arch_floral_right: formData.arch_floral_right || DEFAULT_INVITE.arch_floral_right,
+        floral_left: formData.floral_left || DEFAULT_INVITE.floral_left,
+        floral_right: formData.floral_right || DEFAULT_INVITE.floral_right,
+        venue_top_flower: formData.venue_top_flower || DEFAULT_INVITE.venue_top_flower,
+        venue_bottom_flower: formData.venue_bottom_flower || DEFAULT_INVITE.venue_bottom_flower,
+        timeline_flourish: formData.timeline_flourish || DEFAULT_INVITE.timeline_flourish,
+      };
+
+      const basePayload = {
         slug: targetSlug,
         groom_name: formData.groom_name || "",
         bride_name: formData.bride_name || "",
@@ -178,39 +302,61 @@ export default function AdminPanel({ onBackToInvite }) {
         venue_title: formData.venue_title || "",
         venue_sub: formData.venue_sub || "",
         map_query: formData.map_query || "",
-        venue_image_url: formData.venue_image_url || formData.venueImg || DEFAULT_INVITE.venue_image_url,
+        venue_image_url: formData.venue_image_url || DEFAULT_INVITE.venue_image_url,
         verse_text: formData.verse_text || "",
         verse_ref: formData.verse_ref || "",
         rsvp_deadline: formData.rsvp_deadline || "",
         audio_url: formData.audio_url || "",
         envelope_video_url: formData.envelope_video_url || "",
         hero_video_url: formData.hero_video_url || "",
-        dress_code: formData.dress_code || DEFAULT_INVITE.dress_code,
+        dress_code: {
+          ...(formData.dress_code || DEFAULT_INVITE.dress_code),
+          media_assets: mediaAssets,
+        },
       };
 
       let invData = null;
 
-      // If we already have the record's primary ID, update by ID (allows changing slug freely!)
+      // Try updating with media_assets in payload
+      const fullPayload = { ...basePayload, media_assets: mediaAssets };
+
       if (formData.id) {
-        const { data: updated, error: updateErr } = await supabase
+        let res = await supabase
           .from("invitations")
-          .update(payload)
+          .update(fullPayload)
           .eq("id", formData.id)
           .select()
           .single();
 
-        if (updateErr) throw updateErr;
-        invData = updated;
+        if (res.error) {
+          // Retry with base payload if media_assets column is missing
+          res = await supabase
+            .from("invitations")
+            .update(basePayload)
+            .eq("id", formData.id)
+            .select()
+            .single();
+        }
+
+        if (res.error) throw res.error;
+        invData = res.data;
       } else {
-        // Fallback: check if slug already exists or insert new
-        const { data: upserted, error: upsertErr } = await supabase
+        let res = await supabase
           .from("invitations")
-          .upsert(payload, { onConflict: "slug" })
+          .upsert(fullPayload, { onConflict: "slug" })
           .select()
           .single();
 
-        if (upsertErr) throw upsertErr;
-        invData = upserted;
+        if (res.error) {
+          res = await supabase
+            .from("invitations")
+            .upsert(basePayload, { onConflict: "slug" })
+            .select()
+            .single();
+        }
+
+        if (res.error) throw res.error;
+        invData = res.data;
       }
 
       if (invData) {
@@ -350,7 +496,7 @@ export default function AdminPanel({ onBackToInvite }) {
             className={`ap-tab-btn ${activeTab === "media" ? "active" : ""}`}
             onClick={() => setActiveTab("media")}
           >
-            <span>🎬</span> Cover Video &amp; Music
+            <span>🎬</span> Media &amp; Images
           </button>
           <button
             className={`ap-tab-btn ${activeTab === "timeline" ? "active" : ""}`}
@@ -522,25 +668,13 @@ export default function AdminPanel({ onBackToInvite }) {
                     />
                   </div>
 
-                  <div className="ap-field">
-                    <label>Venue Photo Image URL</label>
-                    <input
-                      type="text"
-                      value={formData.venue_image_url || formData.venueImg || ""}
-                      onChange={(e) => handleChange("venue_image_url", e.target.value)}
-                      placeholder="e.g. https://.../venue.png"
-                    />
-                    <small>Luxury photo/illustration of the wedding venue.</small>
-                    {(formData.venue_image_url || formData.venueImg || DEFAULT_INVITE.venue_image_url) && (
-                      <div style={{ marginTop: "10px", width: "100%", maxWidth: "320px" }}>
-                        <img
-                          src={formData.venue_image_url || formData.venueImg || DEFAULT_INVITE.venue_image_url}
-                          alt="Venue preview"
-                          style={{ width: "100%", borderRadius: "10px", border: "1px solid #D6C2A8", display: "block" }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <ImageUploadField
+                    label="Venue Photo Image"
+                    description="Luxury photograph or architectural illustration of the wedding venue."
+                    value={formData.venue_image_url}
+                    defaultValue={DEFAULT_INVITE.venue_image_url}
+                    onChange={(val) => handleChange("venue_image_url", val)}
+                  />
 
                   <div className="ap-field">
                     <label>Google Maps Search Query / Address</label>
@@ -563,47 +697,163 @@ export default function AdminPanel({ onBackToInvite }) {
                 </div>
               )}
 
-              {/* TAB 4: MEDIA & MUSIC */}
+              {/* TAB 4: MEDIA & IMAGES */}
               {activeTab === "media" && (
                 <div className="ap-section-card">
-                  <h2>🎬 Videos, Invitation Graphic &amp; Background Audio</h2>
-                  <p className="ap-desc">Update video loops, opening envelope animation, and background music stream.</p>
+                  <h2>🎬 Media, Images &amp; Background Audio</h2>
+                  <p className="ap-desc">Manage all photos, videos, calligraphy graphics, and background audio for the invitation.</p>
 
-                  <div className="ap-field">
-                    <label>Opening Envelope Video (URL or local path)</label>
-                    <input
-                      type="text"
-                      value={formData.envelope_video_url || ""}
-                      onChange={(e) => handleChange("envelope_video_url", e.target.value)}
-                      placeholder="e.g. /Envelope%20Cover%20Video%202.mp4 or CDN URL"
+                  {/* Section 1: Envelope & Cover Media */}
+                  <div className="ap-media-group">
+                    <h3 className="ap-media-group-title">✉️ 1. Envelope &amp; Cover Media</h3>
+                    
+                    <div className="ap-field">
+                      <label>Opening Envelope Video (URL or local path)</label>
+                      <input
+                        type="text"
+                        value={formData.envelope_video_url || ""}
+                        onChange={(e) => handleChange("envelope_video_url", e.target.value)}
+                        placeholder="e.g. /Envelope%20Cover%20Video%202.mp4 or CDN URL"
+                      />
+                      <small>Plays seamlessly in-place when the guest taps to unseal the envelope.</small>
+                    </div>
+
+                    <ImageUploadField
+                      label="Envelope Cover Static Photo (Poster Image)"
+                      description="Displayed on the envelope before tapping to open, and as the initial video poster."
+                      value={formData.envelope_image_url}
+                      defaultValue={DEFAULT_INVITE.envelope_image_url}
+                      onChange={(val) => handleChange("envelope_image_url", val)}
                     />
-                    <small>Played seamlessly in-place when user taps to open the envelope.</small>
                   </div>
 
-                  <div className="ap-field">
-                    <label>Main Hero Background Video (URL)</label>
-                    <input
-                      type="text"
-                      value={formData.hero_video_url || ""}
-                      onChange={(e) => handleChange("hero_video_url", e.target.value)}
-                      placeholder="e.g. https://.../Newbeautifulvideo.mp4"
-                    />
-                    <small>Looping video in the background of the opening page.</small>
+                  {/* Section 2: Hero Background & Music */}
+                  <div className="ap-media-group">
+                    <h3 className="ap-media-group-title">🎥 2. Hero Background Video &amp; Music</h3>
+                    
+                    <div className="ap-field">
+                      <label>Main Hero Background Video (URL)</label>
+                      <input
+                        type="text"
+                        value={formData.hero_video_url || ""}
+                        onChange={(e) => handleChange("hero_video_url", e.target.value)}
+                        placeholder="e.g. https://.../Newbeautifulvideo.mp4"
+                      />
+                      <small>Looping video in the background of the first invitation page.</small>
+                    </div>
+
+                    <div className="ap-field">
+                      <label>Background Music Audio (MP3 URL)</label>
+                      <input
+                        type="text"
+                        value={formData.audio_url || ""}
+                        onChange={(e) => handleChange("audio_url", e.target.value)}
+                        placeholder="e.g. https://.../music.mp3"
+                      />
+                      {formData.audio_url && (
+                        <div style={{ marginTop: "8px" }}>
+                          <audio controls src={formData.audio_url} style={{ width: "100%", height: "36px" }} />
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="ap-field">
-                    <label>Background Music Audio (MP3 URL)</label>
-                    <input
-                      type="text"
-                      value={formData.audio_url || ""}
-                      onChange={(e) => handleChange("audio_url", e.target.value)}
-                      placeholder="e.g. https://.../music.mp3"
+                  {/* Section 3: Venue & Location Photos */}
+                  <div className="ap-media-group">
+                    <h3 className="ap-media-group-title">🏛️ 3. Venue &amp; Location Photos</h3>
+                    
+                    <ImageUploadField
+                      label="Main Venue Photograph"
+                      description="Framed photo of the wedding venue shown in the Location section."
+                      value={formData.venue_image_url}
+                      defaultValue={DEFAULT_INVITE.venue_image_url}
+                      onChange={(val) => handleChange("venue_image_url", val)}
                     />
-                    {formData.audio_url && (
-                      <div style={{ marginTop: "8px" }}>
-                        <audio controls src={formData.audio_url} style={{ width: "100%", height: "36px" }} />
-                      </div>
-                    )}
+
+                    <div className="ap-grid-2">
+                      <ImageUploadField
+                        label="Top-Right Venue Flower Bouquet"
+                        description="Decorative floral cluster at the top-right of Location."
+                        value={formData.venue_top_flower}
+                        defaultValue={DEFAULT_INVITE.venue_top_flower}
+                        onChange={(val) => handleChange("venue_top_flower", val)}
+                      />
+                      <ImageUploadField
+                        label="Bottom-Left Venue Flower Bouquet"
+                        description="Decorative floral cluster overlapping the venue photo."
+                        value={formData.venue_bottom_flower}
+                        defaultValue={DEFAULT_INVITE.venue_bottom_flower}
+                        onChange={(val) => handleChange("venue_bottom_flower", val)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 4: 3D Arch & Islamic Calligraphy */}
+                  <div className="ap-media-group">
+                    <h3 className="ap-media-group-title">🌸 4. Islamic Arch &amp; Calligraphy Graphics</h3>
+
+                    <ImageUploadField
+                      label="Bismillah Arabic Calligraphy"
+                      description="Gold embossed Bismillah calligraphy at the crown of the arch."
+                      value={formData.bismillah_img}
+                      defaultValue={DEFAULT_INVITE.bismillah_img}
+                      onChange={(val) => handleChange("bismillah_img", val)}
+                    />
+
+                    <ImageUploadField
+                      label="3D Embossed Arch Frame"
+                      description="Luxury architectural 3D arch border containing the invitation wording."
+                      value={formData.arch_frame_img}
+                      defaultValue={DEFAULT_INVITE.arch_frame_img}
+                      onChange={(val) => handleChange("arch_frame_img", val)}
+                    />
+
+                    <div className="ap-grid-2">
+                      <ImageUploadField
+                        label="Arch Base Left Flowers"
+                        description="Floral bouquet sitting at the bottom-left of the arch."
+                        value={formData.arch_floral_left}
+                        defaultValue={DEFAULT_INVITE.arch_floral_left}
+                        onChange={(val) => handleChange("arch_floral_left", val)}
+                      />
+                      <ImageUploadField
+                        label="Arch Base Right Flowers"
+                        description="Floral bouquet sitting at the bottom-right of the arch."
+                        value={formData.arch_floral_right}
+                        defaultValue={DEFAULT_INVITE.arch_floral_right}
+                        onChange={(val) => handleChange("arch_floral_right", val)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 5: Corner Florals & Flourishes */}
+                  <div className="ap-media-group">
+                    <h3 className="ap-media-group-title">🌿 5. Hero Corner Florals &amp; Timeline Flourish</h3>
+
+                    <div className="ap-grid-2">
+                      <ImageUploadField
+                        label="Hero Top-Left Swaying Bouquet"
+                        description="Flower branch in the top-left of the first page."
+                        value={formData.floral_left}
+                        defaultValue={DEFAULT_INVITE.floral_left}
+                        onChange={(val) => handleChange("floral_left", val)}
+                      />
+                      <ImageUploadField
+                        label="Hero Top-Right Swaying Bouquet"
+                        description="Flower branch in the top-right of the first page."
+                        value={formData.floral_right}
+                        defaultValue={DEFAULT_INVITE.floral_right}
+                        onChange={(val) => handleChange("floral_right", val)}
+                      />
+                    </div>
+
+                    <ImageUploadField
+                      label="Timeline Calligraphy Flourish"
+                      description="Header flourish motif sitting above the timeline."
+                      value={formData.timeline_flourish}
+                      defaultValue={DEFAULT_INVITE.timeline_flourish}
+                      onChange={(val) => handleChange("timeline_flourish", val)}
+                    />
                   </div>
                 </div>
               )}
@@ -670,14 +920,46 @@ export default function AdminPanel({ onBackToInvite }) {
                           </div>
                           <div className="ap-field">
                             <label>Illustration Image URL</label>
-                            <input
-                              type="text"
-                              value={item.illustration_url || ""}
-                              onChange={(e) => handleTimelineChange(idx, "illustration_url", e.target.value)}
-                              placeholder="https://...png"
-                            />
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <input
+                                type="text"
+                                value={item.illustration_url || ""}
+                                onChange={(e) => handleTimelineChange(idx, "illustration_url", e.target.value)}
+                                placeholder="https://...png"
+                                style={{ flex: 1 }}
+                              />
+                              <label className="ap-img-upload-btn" style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", padding: "6px 10px", fontSize: "12px", whiteSpace: "nowrap" }}>
+                                📁 Pick
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onload = (evt) => {
+                                        handleTimelineChange(idx, "illustration_url", evt.target.result);
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                />
+                              </label>
+                            </div>
                           </div>
                         </div>
+
+                        {item.illustration_url && (
+                          <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "10px" }}>
+                            <img
+                              src={item.illustration_url}
+                              alt="Illustration Preview"
+                              style={{ width: "48px", height: "48px", objectFit: "contain", border: "1px solid #D6C2A8", borderRadius: "6px", background: "#FCFAF7" }}
+                            />
+                            <small style={{ color: "#8A7763" }}>Event Illustration Preview</small>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -701,34 +983,32 @@ export default function AdminPanel({ onBackToInvite }) {
                   </div>
 
                   <div className="ap-field">
-                    <label>Dress Code Note / Description</label>
+                    <label>Dress Code Description / Guidelines</label>
                     <textarea
                       rows={3}
                       value={formData.dress_code?.note || ""}
                       onChange={(e) => handleDressCodeChange("note", e.target.value)}
-                      placeholder="Guidelines for guests..."
+                      placeholder="e.g. We kindly invite our guests to dress in soft pastel shades..."
                     />
                   </div>
 
                   <div className="ap-field">
-                    <label>Color Swatches (Hex Codes)</label>
+                    <label>Color Palette Swatches</label>
                     <div className="ap-palette-row">
-                      {(formData.dress_code?.palette || ["#F6E7D8", "#E8D5C4", "#D8E2DC", "#FFE5D9", "#ECE4DB"]).map(
-                        (col, i) => (
-                          <div key={i} className="ap-swatch-picker">
-                            <input
-                              type="color"
-                              value={col.startsWith("#") ? col : "#F6E7D8"}
-                              onChange={(e) => handlePaletteChange(i, e.target.value)}
-                            />
-                            <span>{col}</span>
-                          </div>
-                        )
-                      )}
+                      {(formData.dress_code?.palette || []).map((color, idx) => (
+                        <div key={idx} className="ap-swatch-picker">
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => handlePaletteChange(idx, e.target.value)}
+                          />
+                          <span>{color}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <hr style={{ margin: "24px 0", borderColor: "#eee" }} />
+                  <hr style={{ margin: "24px 0", border: "none", borderTop: "1px solid #EDE4D8" }} />
 
                   <div className="ap-field">
                     <label>Quranic Verse Text</label>
@@ -757,32 +1037,37 @@ export default function AdminPanel({ onBackToInvite }) {
                 <div className="ap-section-card">
                   <div className="ap-section-header">
                     <div>
-                      <h2>💌 RSVP Guest List</h2>
-                      <p className="ap-desc">Real-time attendance responses from your guests in Supabase.</p>
+                      <h2>💌 Guest RSVPs</h2>
+                      <p className="ap-desc">Real-time attendance responses submitted by invited guests.</p>
                     </div>
-                    <button type="button" className="ap-btn-secondary" onClick={exportCsv} disabled={rsvps.length === 0}>
-                      📥 Export to CSV
-                    </button>
+                    {rsvps.length > 0 && (
+                      <button type="button" className="ap-btn-secondary" onClick={exportCsv}>
+                        📥 Export to CSV
+                      </button>
+                    )}
                   </div>
 
-                  {/* Stat Cards */}
                   <div className="ap-stats-row">
                     <div className="ap-stat-card">
-                      <div className="ap-stat-val">{totalGuests}</div>
-                      <div className="ap-stat-lbl">Total Attending Guests</div>
+                      <div className="ap-stat-val">{rsvps.length}</div>
+                      <div className="ap-stat-lbl">Total Responses</div>
                     </div>
                     <div className="ap-stat-card">
-                      <div className="ap-stat-val" style={{ color: "#27ae60" }}>{acceptedCount}</div>
-                      <div className="ap-stat-lbl">Accepted RSVPs</div>
+                      <div className="ap-stat-val">{attendingCount}</div>
+                      <div className="ap-stat-lbl">Attending</div>
                     </div>
                     <div className="ap-stat-card">
-                      <div className="ap-stat-val" style={{ color: "#e74c3c" }}>{declinedCount}</div>
+                      <div className="ap-stat-val">{totalGuestsCount}</div>
+                      <div className="ap-stat-lbl">Total Guests</div>
+                    </div>
+                    <div className="ap-stat-card">
+                      <div className="ap-stat-val">{declinedCount}</div>
                       <div className="ap-stat-lbl">Declined</div>
                     </div>
                   </div>
 
                   {rsvps.length === 0 ? (
-                    <div className="ap-empty">No RSVPs received yet. Once guests submit, they will appear here live.</div>
+                    <div className="ap-empty">No RSVPs submitted yet. As guests confirm attendance, they will appear here live.</div>
                   ) : (
                     <div className="ap-table-wrap">
                       <table className="ap-table">
@@ -790,27 +1075,22 @@ export default function AdminPanel({ onBackToInvite }) {
                           <tr>
                             <th>Guest Name</th>
                             <th>Status</th>
-                            <th>Guests</th>
-                            <th>Submitted At</th>
+                            <th>Guest Count</th>
+                            <th>Submitted On</th>
                           </tr>
                         </thead>
                         <tbody>
                           {rsvps.map((r) => (
                             <tr key={r.id}>
-                              <td style={{ fontWeight: "600" }}>{r.guest_name}</td>
+                              <td><strong>{r.guest_name}</strong></td>
                               <td>
                                 <span className={`ap-badge ${r.attending === "yes" ? "badge-yes" : "badge-no"}`}>
-                                  {r.attending === "yes" ? "Joyfully Attending" : "Declined"}
+                                  {r.attending === "yes" ? "✓ Attending" : "✗ Declined"}
                                 </span>
                               </td>
-                              <td>{r.attending === "yes" ? r.guest_count : 0}</td>
-                              <td style={{ color: "#888", fontSize: "12px" }}>
-                                {new Date(r.created_at).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                              <td>{r.attending === "yes" ? r.guest_count || 1 : "—"}</td>
+                              <td style={{ color: "#8A7763", fontSize: "12px" }}>
+                                {r.created_at ? new Date(r.created_at).toLocaleString() : "Recently"}
                               </td>
                             </tr>
                           ))}
@@ -821,14 +1101,10 @@ export default function AdminPanel({ onBackToInvite }) {
                 </div>
               )}
 
-              {/* Bottom Sticky Save Bar */}
+              {/* Bottom Action Bar */}
               <div className="ap-bottom-bar">
-                <button
-                  type="submit"
-                  className="ap-btn-save-large"
-                  disabled={saving}
-                >
-                  {saving ? "Saving Changes..." : "💾 Save All Changes to Supabase"}
+                <button type="submit" className="ap-btn-save-large" disabled={saving}>
+                  {saving ? "💾 Saving All Changes to Supabase..." : "💾 Save All Changes to Supabase"}
                 </button>
               </div>
             </form>
@@ -836,17 +1112,16 @@ export default function AdminPanel({ onBackToInvite }) {
         </main>
       </div>
 
-      {/* Admin Panel Styles */}
       <style>{`
         .ap-root {
           min-height: 100vh;
           background: #F4EFE6;
-          color: #332619;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #3B2E1E;
         }
-        .ap-header {
+        .ap-nav {
           background: #FFFFFF;
-          border-bottom: 1px solid #E6DACB;
+          border-bottom: 1px solid #E5DACE;
           padding: 14px 28px;
           display: flex;
           justify-content: space-between;
@@ -854,102 +1129,90 @@ export default function AdminPanel({ onBackToInvite }) {
           position: sticky;
           top: 0;
           z-index: 100;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
-        .ap-header-left {
+        .ap-nav-brand {
           display: flex;
           align-items: center;
-          gap: 20px;
+          gap: 12px;
         }
-        .ap-logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .ap-logo h1 {
-          font-size: 17px;
-          font-weight: 700;
-          margin: 0;
-          color: #5C4325;
-        }
-        .ap-logo-badge {
+        .ap-admin-pill {
           background: #8A6B34;
           color: #FFF;
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 700;
-          letter-spacing: 1px;
-          padding: 3px 7px;
+          padding: 3px 8px;
           border-radius: 4px;
+          letter-spacing: 0.5px;
         }
-        .ap-slug-wrap {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 13px;
-          color: #7A6956;
+        .ap-nav-brand h1 {
+          font-size: 18px;
+          font-weight: 700;
+          margin: 0;
+          color: #4A351C;
         }
-        .ap-slug-wrap input {
-          background: #FAF6F0;
-          border: 1px solid #D6C7B2;
+        .ap-slug-input {
+          border: 1px solid #D6C8B5;
           padding: 4px 10px;
           border-radius: 6px;
           font-size: 13px;
-          color: #4A3926;
-          font-weight: 600;
+          color: #5C4934;
+          background: #FAF6EF;
         }
-        .ap-header-actions {
+        .ap-nav-actions {
           display: flex;
-          gap: 12px;
+          gap: 10px;
         }
         .ap-btn-preview {
-          background: #FAF6F0;
-          border: 1px solid #C4B199;
-          color: #694F2E;
-          font-weight: 600;
+          background: #F7EFE3;
+          border: 1px solid #D6C2A8;
+          color: #6E5330;
           padding: 8px 16px;
           border-radius: 7px;
-          cursor: pointer;
           font-size: 13px;
-          transition: all 0.2s;
+          font-weight: 600;
+          cursor: pointer;
         }
         .ap-btn-preview:hover {
-          background: #EFE6D8;
+          background: #EFE4D3;
         }
         .ap-btn-save {
           background: #8A6B34;
           color: #FFFFFF;
           border: none;
-          font-weight: 600;
           padding: 8px 20px;
           border-radius: 7px;
-          cursor: pointer;
           font-size: 13px;
-          transition: all 0.2s;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(138, 107, 52, 0.25);
         }
         .ap-btn-save:hover {
           background: #735728;
         }
-        .ap-alert {
-          padding: 12px 24px;
-          font-size: 14px;
+        .ap-banner-success {
+          background: #EAF7ED;
+          border-bottom: 1px solid #A3D9B1;
+          color: #1E6B37;
+          padding: 10px 28px;
+          font-size: 13px;
           font-weight: 600;
           text-align: center;
         }
-        .ap-alert-success {
-          background: #D4EDDA;
-          color: #155724;
-          border-bottom: 1px solid #C3E6CB;
-        }
-        .ap-alert-error {
-          background: #F8D7DA;
-          color: #721C24;
-          border-bottom: 1px solid #F5C6CB;
+        .ap-banner-error {
+          background: #FDF0F0;
+          border-bottom: 1px solid #F3B4B4;
+          color: #A32727;
+          padding: 10px 28px;
+          font-size: 13px;
+          font-weight: 600;
+          text-align: center;
         }
         .ap-container {
-          display: flex;
           max-width: 1200px;
-          margin: 24px auto;
-          padding: 0 20px;
+          margin: 0 auto;
+          padding: 24px;
+          display: flex;
           gap: 24px;
         }
         .ap-sidebar {
@@ -960,43 +1223,44 @@ export default function AdminPanel({ onBackToInvite }) {
           gap: 6px;
         }
         .ap-tab-btn {
-          background: #FFFFFF;
-          border: 1px solid #EADBCE;
-          color: #5C4A36;
-          padding: 12px 16px;
-          text-align: left;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
           display: flex;
           align-items: center;
           gap: 10px;
-          transition: all 0.2s;
+          width: 100%;
+          text-align: left;
+          padding: 12px 16px;
+          background: transparent;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          color: #6B5B49;
+          cursor: pointer;
+          transition: all 0.15s;
         }
         .ap-tab-btn:hover {
-          background: #FAF6F0;
-          border-color: #D6C1AA;
+          background: #EBE1D3;
+          color: #3B2E1E;
         }
         .ap-tab-btn.active {
           background: #8A6B34;
           color: #FFFFFF;
-          border-color: #8A6B34;
-          box-shadow: 0 4px 12px rgba(138, 107, 52, 0.25);
+          box-shadow: 0 2px 8px rgba(138, 107, 52, 0.25);
         }
         .ap-content {
           flex: 1;
         }
         .ap-section-card {
           background: #FFFFFF;
-          border: 1px solid #E6DACB;
           border-radius: 12px;
           padding: 28px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-          margin-bottom: 24px;
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+          border: 1px solid #EBE0D3;
+          margin-bottom: 20px;
         }
         .ap-section-card h2 {
           font-size: 20px;
+          font-weight: 700;
           color: #4A351C;
           margin: 0 0 6px;
         }
@@ -1047,6 +1311,136 @@ export default function AdminPanel({ onBackToInvite }) {
           font-size: 12px;
           color: #9C8974;
         }
+
+        /* Image & Media Manager Styles */
+        .ap-media-group {
+          background: #FAF6EF;
+          border: 1px solid #EADDCF;
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 24px;
+        }
+        .ap-media-group-title {
+          font-size: 16px;
+          font-weight: 700;
+          color: #6E5330;
+          margin: 0 0 16px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #E5D7C7;
+        }
+        .ap-image-field-card {
+          background: #FFFFFF;
+          border: 1px solid #E5D9CC;
+          border-radius: 8px;
+          padding: 14px;
+          margin-bottom: 14px;
+          display: flex;
+          gap: 16px;
+          align-items: center;
+        }
+        .ap-image-field-main {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .ap-image-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: #4A351C;
+        }
+        .ap-image-desc-text {
+          font-size: 12px;
+          color: #8A7763;
+        }
+        .ap-image-row {
+          display: flex;
+          gap: 8px;
+          margin-top: 4px;
+        }
+        .ap-image-input {
+          flex: 1;
+          border: 1px solid #D6C8B5;
+          background: #FCFAF7;
+          padding: 8px 12px;
+          border-radius: 6px;
+          font-size: 13px;
+          color: #332619;
+          font-family: inherit;
+        }
+        .ap-image-input:focus {
+          outline: none;
+          border-color: #8A6B34;
+          background: #FFFFFF;
+        }
+        .ap-img-upload-btn {
+          background: #F4E8D6;
+          border: 1px solid #D6C2A8;
+          color: #6E5330;
+          padding: 8px 14px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: background 0.15s;
+        }
+        .ap-img-upload-btn:hover {
+          background: #EADBC5;
+        }
+        .ap-image-actions {
+          display: flex;
+          gap: 10px;
+          margin-top: 4px;
+        }
+        .ap-img-reset-btn {
+          background: none;
+          border: none;
+          color: #8A6B34;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 0;
+          text-decoration: underline;
+        }
+        .ap-img-clear-btn {
+          background: none;
+          border: none;
+          color: #C0392B;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 0;
+        }
+        .ap-image-thumb-box {
+          width: 80px;
+          height: 80px;
+          flex-shrink: 0;
+          border-radius: 8px;
+          border: 1px solid #D6C8B5;
+          background: #FDFBF8;
+          background-image: linear-gradient(45deg, #F0EAE1 25%, transparent 25%),
+                            linear-gradient(-45deg, #F0EAE1 25%, transparent 25%),
+                            linear-gradient(45deg, transparent 75%, #F0EAE1 75%),
+                            linear-gradient(-45deg, transparent 75%, #F0EAE1 75%);
+          background-size: 12px 12px;
+          background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .ap-image-thumb-box img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+        .ap-no-img-text {
+          font-size: 10px;
+          color: #A89582;
+          text-align: center;
+        }
+
         .ap-preview-box {
           background: #FAF5ED;
           border: 1px dashed #D6C3AA;
@@ -1102,15 +1496,22 @@ export default function AdminPanel({ onBackToInvite }) {
           font-weight: 600;
           padding: 8px 16px;
           border-radius: 7px;
-          cursor: pointer;
           font-size: 13px;
+          cursor: pointer;
+        }
+        .ap-btn-secondary:hover {
+          background: #EDE1CE;
+        }
+        .ap-timeline-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
         }
         .ap-timeline-item-card {
-          background: #FAF7F2;
-          border: 1px solid #E8DDD0;
-          border-radius: 9px;
+          background: #FCFAF7;
+          border: 1px solid #E5DACE;
+          border-radius: 8px;
           padding: 16px;
-          margin-bottom: 14px;
         }
         .ap-tl-header {
           display: flex;
@@ -1120,32 +1521,35 @@ export default function AdminPanel({ onBackToInvite }) {
         }
         .ap-tl-num {
           font-weight: 700;
-          font-size: 13px;
           color: #8A6B34;
+          font-size: 13px;
         }
         .ap-btn-delete {
           background: none;
           border: none;
-          color: #c0392b;
-          font-weight: 600;
+          color: #C0392B;
           font-size: 12px;
+          font-weight: 600;
           cursor: pointer;
+        }
+        .ap-btn-delete:hover {
+          text-decoration: underline;
         }
         .ap-stats-row {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 14px;
           margin-bottom: 24px;
         }
         .ap-stat-card {
-          background: #FAF6F0;
-          border: 1px solid #EADBCE;
-          padding: 18px;
-          border-radius: 10px;
+          background: #FAF6EF;
+          border: 1px solid #EBE0D3;
+          border-radius: 8px;
+          padding: 16px;
           text-align: center;
         }
         .ap-stat-val {
-          font-size: 32px;
+          font-size: 28px;
           font-weight: 700;
           color: #5C4425;
           margin-bottom: 4px;

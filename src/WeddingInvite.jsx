@@ -1903,6 +1903,8 @@ export default function WeddingInvite() {
             }
             : DATA.dateParts;
 
+          const mediaAssets = inv.media_assets || inv.dress_code?.media_assets || {};
+
           setData((prev) => ({
             ...prev,
             partnerA: inv.groom_name || prev.partnerA,
@@ -1916,13 +1918,24 @@ export default function WeddingInvite() {
             venueTitle: inv.venue_title || prev.venueTitle,
             venueSub: inv.venue_sub || prev.venueSub,
             mapQuery: inv.map_query || prev.mapQuery,
+            venueImg: inv.venue_image_url || mediaAssets.venue_image_url || prev.venueImg,
             verse: inv.verse_text || prev.verse,
             verseRef: inv.verse_ref || prev.verseRef,
             rsvpBy: inv.rsvp_deadline || prev.rsvpBy,
             audioUrl: inv.audio_url || prev.audioUrl,
             envelopeVideo: inv.envelope_video_url || prev.envelopeVideo,
+            envelopeImg: inv.envelope_image_url || mediaAssets.envelope_image_url || prev.envelopeImg,
             heroVideo: inv.hero_video_url || prev.heroVideo,
             dressCode: inv.dress_code || prev.dressCode,
+            bismillahImg: inv.bismillah_img || mediaAssets.bismillah_img || prev.bismillahImg,
+            archFrameImg: inv.arch_frame_img || mediaAssets.arch_frame_img || prev.archFrameImg,
+            archFloralLeft: inv.arch_floral_left || mediaAssets.arch_floral_left || prev.archFloralLeft,
+            archFloralRight: inv.arch_floral_right || mediaAssets.arch_floral_right || prev.archFloralRight,
+            floralLeft: inv.floral_left || mediaAssets.floral_left || prev.floralLeft,
+            floralRight: inv.floral_right || mediaAssets.floral_right || prev.floralRight,
+            venueTopFlower: inv.venue_top_flower || mediaAssets.venue_top_flower || prev.venueTopFlower,
+            venueBottomFlower: inv.venue_bottom_flower || mediaAssets.venue_bottom_flower || prev.venueBottomFlower,
+            timelineFlourish: inv.timeline_flourish || mediaAssets.timeline_flourish || prev.timelineFlourish,
           }));
 
           // Fetch timeline events
@@ -2069,7 +2082,7 @@ export default function WeddingInvite() {
             ref={videoRef}
             className="wei-envelope-media"
             src={`${data.envelopeVideo}#t=0.001`}
-            poster="/Envelope%20Cover%20Photo%203.png"
+            poster={data.envelopeImg || "/Envelope%20Cover%20Photo%203.png"}
             muted
             playsInline
             preload="auto"
