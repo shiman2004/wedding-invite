@@ -276,9 +276,10 @@ export default function AdminPanel({ onBackToInvite }) {
 
       const targetSlug = (formData.slug || slug || "ayash-farwin").trim();
 
+      // Keep all rich media assets inside the dress_code JSON object which always succeeds
       const mediaAssets = {
-        envelope_image_url: formData.envelope_image_url || DEFAULT_INVITE.envelope_image_url,
         venue_image_url: formData.venue_image_url || DEFAULT_INVITE.venue_image_url,
+        envelope_image_url: formData.envelope_image_url || DEFAULT_INVITE.envelope_image_url,
         bismillah_img: formData.bismillah_img || DEFAULT_INVITE.bismillah_img,
         arch_frame_img: formData.arch_frame_img || DEFAULT_INVITE.arch_frame_img,
         arch_floral_left: formData.arch_floral_left || DEFAULT_INVITE.arch_floral_left,
@@ -290,7 +291,13 @@ export default function AdminPanel({ onBackToInvite }) {
         timeline_flourish: formData.timeline_flourish || DEFAULT_INVITE.timeline_flourish,
       };
 
-      const basePayload = {
+      const dressCodePayload = {
+        ...(formData.dress_code || DEFAULT_INVITE.dress_code),
+        media_assets: mediaAssets,
+      };
+
+      // Payload to submit
+      let payload = {
         slug: targetSlug,
         groom_name: formData.groom_name || "",
         bride_name: formData.bride_name || "",
@@ -302,61 +309,50 @@ export default function AdminPanel({ onBackToInvite }) {
         venue_title: formData.venue_title || "",
         venue_sub: formData.venue_sub || "",
         map_query: formData.map_query || "",
-        venue_image_url: formData.venue_image_url || DEFAULT_INVITE.venue_image_url,
         verse_text: formData.verse_text || "",
         verse_ref: formData.verse_ref || "",
         rsvp_deadline: formData.rsvp_deadline || "",
         audio_url: formData.audio_url || "",
         envelope_video_url: formData.envelope_video_url || "",
         hero_video_url: formData.hero_video_url || "",
-        dress_code: {
-          ...(formData.dress_code || DEFAULT_INVITE.dress_code),
-          media_assets: mediaAssets,
-        },
+        dress_code: dressCodePayload,
       };
 
       let invData = null;
+      let attempts = 0;
 
-      // Try updating with media_assets in payload
-      const fullPayload = { ...basePayload, media_assets: mediaAssets };
-
-      if (formData.id) {
-        let res = await supabase
-          .from("invitations")
-          .update(fullPayload)
-          .eq("id", formData.id)
-          .select()
-          .single();
-
-        if (res.error) {
-          // Retry with base payload if media_assets column is missing
+      while (attempts < 6) {
+        attempts++;
+        let res;
+        if (formData.id) {
           res = await supabase
             .from("invitations")
-            .update(basePayload)
+            .update(payload)
             .eq("id", formData.id)
             .select()
             .single();
-        }
-
-        if (res.error) throw res.error;
-        invData = res.data;
-      } else {
-        let res = await supabase
-          .from("invitations")
-          .upsert(fullPayload, { onConflict: "slug" })
-          .select()
-          .single();
-
-        if (res.error) {
+        } else {
           res = await supabase
             .from("invitations")
-            .upsert(basePayload, { onConflict: "slug" })
+            .upsert(payload, { onConflict: "slug" })
             .select()
             .single();
         }
 
-        if (res.error) throw res.error;
-        invData = res.data;
+        if (!res.error) {
+          invData = res.data;
+          break;
+        }
+
+        // Auto-detect if Supabase complained about a column not existing in schema cache
+        const colMatch = res.error.message?.match(/Could not find the '([^']+)' column/i);
+        if (colMatch && colMatch[1] && payload[colMatch[1]] !== undefined) {
+          console.warn(`Column '${colMatch[1]}' not in Supabase schema. Stripping from root payload.`);
+          delete payload[colMatch[1]];
+          continue; // Retry next attempt
+        }
+
+        throw res.error;
       }
 
       if (invData) {
@@ -1138,10 +1134,20 @@ export default function AdminPanel({ onBackToInvite }) {
                 </div>
               )}
 
-              {/* Bottom Action Bar */}
-              <div className="ap-bottom-bar">
-                <button type="submit" className="ap-btn-save-large" disabled={saving}>
-                  {saving ? "💾 Saving All Changes to Supabase..." : "💾 Save All Changes to Supabase"}
+              {/* Card Footer Save Action */}
+              <div className="ap-card-footer">
+                <button type="submit" className="ap-btn-primary" disabled={saving}>
+                  {saving ? (
+                    <>
+                      <span className="ap-spinner" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>💾</span>
+                      <span>Save All Changes</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -1806,27 +1812,12 @@ export default function AdminPanel({ onBackToInvite }) {
           color: #E74C3C;
         }
 
-        .ap-bottom-bar {
-          margin-top: 10px;
-        }
-
-        .ap-btn-save-large {
-          width: 100%;
-          background: linear-gradient(135deg, #9C7A3E 0%, #80612A 100%);
-          color: #FFFFFF;
-          border: none;
-          font-weight: 700;
-          padding: 16px;
-          border-radius: 10px;
-          font-size: 16px;
-          cursor: pointer;
-          box-shadow: 0 6px 18px rgba(138, 107, 52, 0.25);
-          transition: all 0.2s;
-        }
-
-        .ap-btn-save-large:hover {
-          background: linear-gradient(135deg, #8A6B34 0%, #705423 100%);
-          box-shadow: 0 8px 22px rgba(138, 107, 52, 0.35);
+        .ap-card-footer {
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid #EAE0D3;
+          display: flex;
+          justify-content: flex-end;
         }
 
         .ap-loading, .ap-empty {
