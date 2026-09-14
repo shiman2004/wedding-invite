@@ -421,101 +421,138 @@ export default function AdminPanel({ onBackToInvite }) {
 
   return (
     <div className="ap-root">
-      {/* Top Navigation Bar */}
-      <header className="ap-header">
-        <div className="ap-header-left">
-          <div className="ap-logo">
-            <span className="ap-logo-badge">ADMIN</span>
-            <h1>Wedding Invitation Control Panel</h1>
+      {/* Sleek Modern Top Navigation Bar */}
+      <header className="ap-navbar">
+        <div className="ap-navbar-left">
+          <div className="ap-brand">
+            <span className="ap-brand-badge">ADMIN</span>
+            <span className="ap-brand-title">Wedding Control Panel</span>
           </div>
-          <div className="ap-slug-wrap">
-            <label>Invite Slug:</label>
+
+          <div className="ap-slug-pill">
+            <span className="ap-slug-label">Slug:</span>
             <input
               type="text"
+              className="ap-slug-field"
               value={formData.slug || slug}
               onChange={(e) => handleChange("slug", e.target.value)}
               placeholder="e.g. ayash-farwin"
+              title="URL Slug identifier"
             />
           </div>
         </div>
 
-        <div className="ap-header-actions">
+        <div className="ap-navbar-actions">
           <button
             type="button"
-            className="ap-btn-preview"
+            className="ap-btn-ghost"
             onClick={() => onBackToInvite && onBackToInvite(formData.slug || slug)}
+            title="Open live wedding invitation in preview mode"
           >
-            Preview Live Invite ↗
+            <span>Live Preview</span>
+            <span>↗</span>
           </button>
           <button
             type="button"
-            className="ap-btn-save"
+            className="ap-btn-primary"
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? "Saving..." : "Save All Changes"}
+            {saving ? (
+              <>
+                <span className="ap-spinner" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <span>💾</span>
+                <span>Save All Changes</span>
+              </>
+            )}
           </button>
         </div>
       </header>
 
       {/* Notifications */}
       {saveSuccess && (
-        <div className="ap-alert ap-alert-success">
-          ✓ All invitation changes saved successfully to Supabase!
+        <div className="ap-toast ap-toast-success">
+          <span>✓</span> All invitation settings and media saved successfully to Supabase!
         </div>
       )}
       {errorMessage && (
-        <div className="ap-alert ap-alert-error">
-          ✕ {errorMessage}
+        <div className="ap-toast ap-toast-error">
+          <span>✕</span> {errorMessage}
         </div>
       )}
 
-      {/* Main Body */}
-      <div className="ap-container">
-        {/* Sidebar Tabs */}
+      {/* Main Workspace */}
+      <div className="ap-layout">
+        {/* Sidebar Navigation */}
         <aside className="ap-sidebar">
-          <button
-            className={`ap-tab-btn ${activeTab === "couple" ? "active" : ""}`}
-            onClick={() => setActiveTab("couple")}
-          >
-            <span>💍</span> Couple &amp; Parents
-          </button>
-          <button
-            className={`ap-tab-btn ${activeTab === "date" ? "active" : ""}`}
-            onClick={() => setActiveTab("date")}
-          >
-            <span>📅</span> Date &amp; Countdown
-          </button>
-          <button
-            className={`ap-tab-btn ${activeTab === "venue" ? "active" : ""}`}
-            onClick={() => setActiveTab("venue")}
-          >
-            <span>📍</span> Venue &amp; Location
-          </button>
-          <button
-            className={`ap-tab-btn ${activeTab === "media" ? "active" : ""}`}
-            onClick={() => setActiveTab("media")}
-          >
-            <span>🎬</span> Media &amp; Images
-          </button>
-          <button
-            className={`ap-tab-btn ${activeTab === "timeline" ? "active" : ""}`}
-            onClick={() => setActiveTab("timeline")}
-          >
-            <span>⏳</span> Wedding Timeline ({timeline.length})
-          </button>
-          <button
-            className={`ap-tab-btn ${activeTab === "dress" ? "active" : ""}`}
-            onClick={() => setActiveTab("dress")}
-          >
-            <span>👗</span> Dress Code &amp; Verse
-          </button>
-          <button
-            className={`ap-tab-btn ${activeTab === "rsvps" ? "active" : ""}`}
-            onClick={() => setActiveTab("rsvps")}
-          >
-            <span>💌</span> Live RSVPs ({rsvps.length})
-          </button>
+          <div className="ap-sidebar-menu">
+            <button
+              type="button"
+              className={`ap-nav-item ${activeTab === "couple" ? "active" : ""}`}
+              onClick={() => setActiveTab("couple")}
+            >
+              <span className="ap-nav-icon">💍</span>
+              <span className="ap-nav-text">Couple &amp; Ceremony</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ap-nav-item ${activeTab === "date" ? "active" : ""}`}
+              onClick={() => setActiveTab("date")}
+            >
+              <span className="ap-nav-icon">📅</span>
+              <span className="ap-nav-text">Date &amp; Countdown</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ap-nav-item ${activeTab === "venue" ? "active" : ""}`}
+              onClick={() => setActiveTab("venue")}
+            >
+              <span className="ap-nav-icon">📍</span>
+              <span className="ap-nav-text">Venue &amp; Location</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ap-nav-item ${activeTab === "media" ? "active" : ""}`}
+              onClick={() => setActiveTab("media")}
+            >
+              <span className="ap-nav-icon">🎬</span>
+              <span className="ap-nav-text">Media &amp; Images</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ap-nav-item ${activeTab === "timeline" ? "active" : ""}`}
+              onClick={() => setActiveTab("timeline")}
+            >
+              <span className="ap-nav-icon">⏳</span>
+              <span className="ap-nav-text">Timeline ({timeline.length})</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ap-nav-item ${activeTab === "dress" ? "active" : ""}`}
+              onClick={() => setActiveTab("dress")}
+            >
+              <span className="ap-nav-icon">👗</span>
+              <span className="ap-nav-text">Dress Code &amp; Verse</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ap-nav-item ${activeTab === "rsvps" ? "active" : ""}`}
+              onClick={() => setActiveTab("rsvps")}
+            >
+              <span className="ap-nav-icon">💌</span>
+              <span className="ap-nav-text">RSVP Responses ({rsvps.length})</span>
+            </button>
+          </div>
         </aside>
 
         {/* Content Panel */}
@@ -1113,266 +1150,401 @@ export default function AdminPanel({ onBackToInvite }) {
       </div>
 
       <style>{`
+        /* ============================================================
+           ADMIN PANEL LUXURY MODERN DASHBOARD DESIGN SYSTEM
+           ============================================================ */
         .ap-root {
           min-height: 100vh;
-          background: #F4EFE6;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          background: #F8F5F0;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           color: #3B2E1E;
+          -webkit-font-smoothing: antialiased;
         }
-        .ap-nav {
+
+        /* Top Modern Navbar */
+        .ap-navbar {
           background: #FFFFFF;
-          border-bottom: 1px solid #E5DACE;
-          padding: 14px 28px;
+          border-bottom: 1px solid #EADDCF;
+          padding: 14px 32px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           position: sticky;
           top: 0;
-          z-index: 100;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+          z-index: 1000;
+          box-shadow: 0 2px 10px rgba(70, 50, 20, 0.04);
         }
-        .ap-nav-brand {
+
+        .ap-navbar-left {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+
+        .ap-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .ap-brand-badge {
+          background: #8A6B34;
+          color: #FFFFFF;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.8px;
+          padding: 4px 8px;
+          border-radius: 5px;
+          text-transform: uppercase;
+        }
+
+        .ap-brand-title {
+          font-size: 17px;
+          font-weight: 700;
+          color: #4A351C;
+          letter-spacing: -0.2px;
+        }
+
+        .ap-slug-pill {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: #FAF6EF;
+          border: 1px solid #E2D4C3;
+          padding: 5px 12px;
+          border-radius: 20px;
+        }
+
+        .ap-slug-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #8C755E;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+        }
+
+        .ap-slug-field {
+          background: transparent;
+          border: none;
+          outline: none;
+          font-size: 13px;
+          font-weight: 600;
+          color: #5C4325;
+          width: 140px;
+          font-family: inherit;
+        }
+
+        .ap-navbar-actions {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-        .ap-admin-pill {
-          background: #8A6B34;
-          color: #FFF;
-          font-size: 11px;
-          font-weight: 700;
-          padding: 3px 8px;
-          border-radius: 4px;
-          letter-spacing: 0.5px;
+
+        .ap-btn-ghost {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #FAF6EF;
+          border: 1px solid #D8C7B5;
+          color: #6E5330;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
         }
-        .ap-nav-brand h1 {
-          font-size: 18px;
-          font-weight: 700;
-          margin: 0;
+
+        .ap-btn-ghost:hover {
+          background: #EFE4D3;
+          border-color: #CBB6A0;
           color: #4A351C;
         }
-        .ap-slug-input {
-          border: 1px solid #D6C8B5;
-          padding: 4px 10px;
-          border-radius: 6px;
-          font-size: 13px;
-          color: #5C4934;
-          background: #FAF6EF;
-        }
-        .ap-nav-actions {
-          display: flex;
-          gap: 10px;
-        }
-        .ap-btn-preview {
-          background: #F7EFE3;
-          border: 1px solid #D6C2A8;
-          color: #6E5330;
-          padding: 8px 16px;
-          border-radius: 7px;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-        }
-        .ap-btn-preview:hover {
-          background: #EFE4D3;
-        }
-        .ap-btn-save {
-          background: #8A6B34;
+
+        .ap-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: linear-gradient(135deg, #9C7A3E 0%, #80612A 100%);
           color: #FFFFFF;
           border: none;
-          padding: 8px 20px;
-          border-radius: 7px;
           font-size: 13px;
           font-weight: 700;
+          padding: 9px 20px;
+          border-radius: 8px;
           cursor: pointer;
-          box-shadow: 0 2px 6px rgba(138, 107, 52, 0.25);
+          box-shadow: 0 2px 8px rgba(138, 107, 52, 0.3);
+          transition: all 0.2s;
         }
-        .ap-btn-save:hover {
-          background: #735728;
+
+        .ap-btn-primary:hover:not(:disabled) {
+          background: linear-gradient(135deg, #8A6B34 0%, #705423 100%);
+          box-shadow: 0 4px 12px rgba(138, 107, 52, 0.4);
+          transform: translateY(-1px);
         }
-        .ap-banner-success {
-          background: #EAF7ED;
-          border-bottom: 1px solid #A3D9B1;
-          color: #1E6B37;
-          padding: 10px 28px;
+
+        .ap-btn-primary:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .ap-spinner {
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          border: 2px solid rgba(255,255,255,0.4);
+          border-top-color: #FFFFFF;
+          border-radius: 50%;
+          animation: ap-spin 0.8s linear infinite;
+        }
+
+        @keyframes ap-spin {
+          to { transform: rotate(360deg); }
+        }
+
+        /* Notifications & Toasts */
+        .ap-toast {
+          padding: 12px 32px;
           font-size: 13px;
           font-weight: 600;
-          text-align: center;
-        }
-        .ap-banner-error {
-          background: #FDF0F0;
-          border-bottom: 1px solid #F3B4B4;
-          color: #A32727;
-          padding: 10px 28px;
-          font-size: 13px;
-          font-weight: 600;
-          text-align: center;
-        }
-        .ap-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 24px;
-          display: flex;
-          gap: 24px;
-        }
-        .ap-sidebar {
-          width: 260px;
-          flex-shrink: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .ap-tab-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
+        }
+
+        .ap-toast-success {
+          background: #EAF8EF;
+          border-bottom: 1px solid #A8E4BA;
+          color: #1A6C35;
+        }
+
+        .ap-toast-error {
+          background: #FDF2F2;
+          border-bottom: 1px solid #F6B8B8;
+          color: #A32727;
+        }
+
+        /* Workspace Grid */
+        .ap-layout {
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 28px 24px 60px;
+          display: flex;
+          gap: 28px;
+          align-items: flex-start;
+        }
+
+        /* Sidebar Tabs */
+        .ap-sidebar {
+          width: 250px;
+          flex-shrink: 0;
+          position: sticky;
+          top: 86px;
+        }
+
+        .ap-sidebar-menu {
+          background: #FFFFFF;
+          border: 1px solid #EBE0D3;
+          border-radius: 12px;
+          padding: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .ap-nav-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
           width: 100%;
           text-align: left;
-          padding: 12px 16px;
+          padding: 11px 14px;
           background: transparent;
-          border: 1px solid transparent;
+          border: none;
           border-radius: 8px;
-          font-size: 14px;
+          font-size: 13.5px;
           font-weight: 600;
-          color: #6B5B49;
+          color: #695844;
           cursor: pointer;
           transition: all 0.15s;
+          font-family: inherit;
         }
-        .ap-tab-btn:hover {
-          background: #EBE1D3;
-          color: #3B2E1E;
+
+        .ap-nav-item:hover {
+          background: #FAF5EE;
+          color: #4A351C;
         }
-        .ap-tab-btn.active {
+
+        .ap-nav-item.active {
           background: #8A6B34;
           color: #FFFFFF;
-          box-shadow: 0 2px 8px rgba(138, 107, 52, 0.25);
+          box-shadow: 0 3px 10px rgba(138, 107, 52, 0.28);
         }
-        .ap-content {
+
+        .ap-nav-icon {
+          font-size: 16px;
+        }
+
+        .ap-nav-text {
           flex: 1;
         }
+
+        /* Content Panel */
+        .ap-content {
+          flex: 1;
+          min-width: 0;
+        }
+
         .ap-section-card {
           background: #FFFFFF;
-          border-radius: 12px;
-          padding: 28px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-          border: 1px solid #EBE0D3;
-          margin-bottom: 20px;
+          border: 1px solid #ECE2D5;
+          border-radius: 14px;
+          padding: 32px;
+          box-shadow: 0 3px 16px rgba(0, 0, 0, 0.03);
+          margin-bottom: 24px;
         }
+
         .ap-section-card h2 {
           font-size: 20px;
           font-weight: 700;
           color: #4A351C;
           margin: 0 0 6px;
         }
+
         .ap-desc {
           font-size: 13px;
-          color: #8A7763;
-          margin: 0 0 22px;
+          color: #8C7863;
+          margin: 0 0 24px;
+          line-height: 1.5;
         }
+
+        /* Form Grids */
         .ap-grid-2 {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          margin-bottom: 16px;
+          gap: 18px;
+          margin-bottom: 18px;
         }
+
         .ap-grid-3 {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
-          gap: 16px;
-          margin-bottom: 16px;
-        }
-        .ap-field {
+          gap: 18px;
           margin-bottom: 18px;
+        }
+
+        .ap-field {
+          margin-bottom: 20px;
           display: flex;
           flex-direction: column;
           gap: 6px;
         }
+
         .ap-field label {
           font-size: 13px;
           font-weight: 600;
-          color: #5C4934;
+          color: #54412B;
         }
+
         .ap-field input, .ap-field select, .ap-field textarea {
           border: 1px solid #D6C8B5;
           background: #FCFAF7;
-          padding: 10px 14px;
-          border-radius: 7px;
+          padding: 11px 14px;
+          border-radius: 8px;
           font-size: 14px;
           color: #332619;
           font-family: inherit;
-          transition: border-color 0.2s;
+          transition: border-color 0.2s, box-shadow 0.2s;
         }
+
         .ap-field input:focus, .ap-field select:focus, .ap-field textarea:focus {
           outline: none;
           border-color: #8A6B34;
+          box-shadow: 0 0 0 3px rgba(138, 107, 52, 0.12);
           background: #FFFFFF;
         }
+
         .ap-field small {
           font-size: 12px;
           color: #9C8974;
+          margin-top: 2px;
         }
 
-        /* Image & Media Manager Styles */
+        /* Media & Image Groups */
         .ap-media-group {
           background: #FAF6EF;
-          border: 1px solid #EADDCF;
-          border-radius: 10px;
-          padding: 20px;
+          border: 1px solid #EAE0D3;
+          border-radius: 12px;
+          padding: 22px;
           margin-bottom: 24px;
         }
+
         .ap-media-group-title {
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 700;
           color: #6E5330;
           margin: 0 0 16px;
-          padding-bottom: 8px;
+          padding-bottom: 10px;
           border-bottom: 1px solid #E5D7C7;
+          letter-spacing: -0.1px;
         }
+
         .ap-image-field-card {
           background: #FFFFFF;
-          border: 1px solid #E5D9CC;
-          border-radius: 8px;
-          padding: 14px;
+          border: 1px solid #E5DACD;
+          border-radius: 10px;
+          padding: 16px;
           margin-bottom: 14px;
           display: flex;
-          gap: 16px;
+          gap: 18px;
           align-items: center;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
+
         .ap-image-field-main {
           flex: 1;
           display: flex;
           flex-direction: column;
           gap: 6px;
+          min-width: 0;
         }
+
         .ap-image-title {
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 600;
           color: #4A351C;
         }
+
         .ap-image-desc-text {
           font-size: 12px;
-          color: #8A7763;
+          color: #8C7863;
+          line-height: 1.4;
         }
+
         .ap-image-row {
           display: flex;
           gap: 8px;
           margin-top: 4px;
         }
+
         .ap-image-input {
           flex: 1;
           border: 1px solid #D6C8B5;
           background: #FCFAF7;
-          padding: 8px 12px;
+          padding: 9px 12px;
           border-radius: 6px;
           font-size: 13px;
           color: #332619;
           font-family: inherit;
         }
+
         .ap-image-input:focus {
           outline: none;
           border-color: #8A6B34;
           background: #FFFFFF;
         }
+
         .ap-img-upload-btn {
           background: #F4E8D6;
           border: 1px solid #D6C2A8;
@@ -1385,36 +1557,41 @@ export default function AdminPanel({ onBackToInvite }) {
           white-space: nowrap;
           transition: background 0.15s;
         }
+
         .ap-img-upload-btn:hover {
           background: #EADBC5;
         }
+
         .ap-image-actions {
           display: flex;
-          gap: 10px;
+          gap: 12px;
           margin-top: 4px;
         }
+
         .ap-img-reset-btn {
           background: none;
           border: none;
           color: #8A6B34;
-          font-size: 11px;
+          font-size: 11.5px;
           font-weight: 600;
           cursor: pointer;
           padding: 0;
           text-decoration: underline;
         }
+
         .ap-img-clear-btn {
           background: none;
           border: none;
           color: #C0392B;
-          font-size: 11px;
+          font-size: 11.5px;
           font-weight: 600;
           cursor: pointer;
           padding: 0;
         }
+
         .ap-image-thumb-box {
-          width: 80px;
-          height: 80px;
+          width: 86px;
+          height: 86px;
           flex-shrink: 0;
           border-radius: 8px;
           border: 1px solid #D6C8B5;
@@ -1430,17 +1607,20 @@ export default function AdminPanel({ onBackToInvite }) {
           justify-content: center;
           overflow: hidden;
         }
+
         .ap-image-thumb-box img {
           width: 100%;
           height: 100%;
           object-fit: contain;
         }
+
         .ap-no-img-text {
           font-size: 10px;
           color: #A89582;
           text-align: center;
         }
 
+        /* Preview box & Map */
         .ap-preview-box {
           background: #FAF5ED;
           border: 1px dashed #D6C3AA;
@@ -1451,6 +1631,7 @@ export default function AdminPanel({ onBackToInvite }) {
           font-size: 14px;
           color: #6E5330;
         }
+
         .ap-map-preview iframe {
           width: 100%;
           height: 220px;
@@ -1458,17 +1639,21 @@ export default function AdminPanel({ onBackToInvite }) {
           border: 1px solid #E0D4C3;
           margin-top: 10px;
         }
+
+        /* Palette Picker */
         .ap-palette-row {
           display: flex;
           gap: 14px;
           flex-wrap: wrap;
         }
+
         .ap-swatch-picker {
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 6px;
         }
+
         .ap-swatch-picker input[type="color"] {
           width: 44px;
           height: 44px;
@@ -1478,17 +1663,21 @@ export default function AdminPanel({ onBackToInvite }) {
           padding: 0;
           background: none;
         }
+
         .ap-swatch-picker span {
           font-size: 11px;
           font-family: monospace;
           color: #666;
         }
+
+        /* Timeline Items */
         .ap-section-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           margin-bottom: 20px;
         }
+
         .ap-btn-secondary {
           background: #FAF4EB;
           border: 1px solid #D6C2A8;
@@ -1499,31 +1688,37 @@ export default function AdminPanel({ onBackToInvite }) {
           font-size: 13px;
           cursor: pointer;
         }
+
         .ap-btn-secondary:hover {
           background: #EDE1CE;
         }
+
         .ap-timeline-list {
           display: flex;
           flex-direction: column;
           gap: 16px;
         }
+
         .ap-timeline-item-card {
           background: #FCFAF7;
           border: 1px solid #E5DACE;
           border-radius: 8px;
           padding: 16px;
         }
+
         .ap-tl-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 12px;
         }
+
         .ap-tl-num {
           font-weight: 700;
           color: #8A6B34;
           font-size: 13px;
         }
+
         .ap-btn-delete {
           background: none;
           border: none;
@@ -1532,15 +1727,19 @@ export default function AdminPanel({ onBackToInvite }) {
           font-weight: 600;
           cursor: pointer;
         }
+
         .ap-btn-delete:hover {
           text-decoration: underline;
         }
+
+        /* RSVP Statistics */
         .ap-stats-row {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 14px;
           margin-bottom: 24px;
         }
+
         .ap-stat-card {
           background: #FAF6EF;
           border: 1px solid #EBE0D3;
@@ -1548,12 +1747,14 @@ export default function AdminPanel({ onBackToInvite }) {
           padding: 16px;
           text-align: center;
         }
+
         .ap-stat-val {
           font-size: 28px;
           font-weight: 700;
           color: #5C4425;
           margin-bottom: 4px;
         }
+
         .ap-stat-lbl {
           font-size: 12px;
           font-weight: 600;
@@ -1561,14 +1762,17 @@ export default function AdminPanel({ onBackToInvite }) {
           letter-spacing: 1px;
           color: #8A755D;
         }
+
         .ap-table-wrap {
           overflow-x: auto;
         }
+
         .ap-table {
           width: 100%;
           border-collapse: collapse;
           font-size: 14px;
         }
+
         .ap-table th {
           text-align: left;
           padding: 12px;
@@ -1578,10 +1782,12 @@ export default function AdminPanel({ onBackToInvite }) {
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
+
         .ap-table td {
           padding: 12px;
           border-bottom: 1px solid #F0E6DA;
         }
+
         .ap-badge {
           display: inline-block;
           padding: 4px 10px;
@@ -1589,20 +1795,24 @@ export default function AdminPanel({ onBackToInvite }) {
           font-size: 11px;
           font-weight: 600;
         }
+
         .badge-yes {
           background: #E8F8F0;
           color: #27AE60;
         }
+
         .badge-no {
           background: #FDEEEF;
           color: #E74C3C;
         }
+
         .ap-bottom-bar {
           margin-top: 10px;
         }
+
         .ap-btn-save-large {
           width: 100%;
-          background: #8A6B34;
+          background: linear-gradient(135deg, #9C7A3E 0%, #80612A 100%);
           color: #FFFFFF;
           border: none;
           font-weight: 700;
@@ -1610,23 +1820,34 @@ export default function AdminPanel({ onBackToInvite }) {
           border-radius: 10px;
           font-size: 16px;
           cursor: pointer;
-          box-shadow: 0 6px 18px rgba(138, 107, 52, 0.3);
-          transition: background 0.2s;
+          box-shadow: 0 6px 18px rgba(138, 107, 52, 0.25);
+          transition: all 0.2s;
         }
+
         .ap-btn-save-large:hover {
-          background: #735728;
+          background: linear-gradient(135deg, #8A6B34 0%, #705423 100%);
+          box-shadow: 0 8px 22px rgba(138, 107, 52, 0.35);
         }
+
         .ap-loading, .ap-empty {
           text-align: center;
           padding: 40px;
           color: #8A7763;
         }
-        @media (max-width: 768px) {
-          .ap-container {
+
+        @media (max-width: 860px) {
+          .ap-navbar {
+            padding: 12px 16px;
             flex-direction: column;
+            gap: 12px;
+          }
+          .ap-layout {
+            flex-direction: column;
+            padding: 16px;
           }
           .ap-sidebar {
             width: 100%;
+            position: static;
           }
           .ap-grid-2, .ap-grid-3, .ap-stats-row {
             grid-template-columns: 1fr;
