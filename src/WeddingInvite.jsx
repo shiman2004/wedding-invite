@@ -7,19 +7,19 @@ import { supabase, isSupabaseConfigured } from "./supabase";
 const DATA = {
   partnerA: "Ayash",
   partnerB: "Farwin",
-  groomParents: "MR & MRS CH. HUSSAINI",
-  brideParents: "MR & MRS CH. FAROOQI",
+  groomParents: "Ms.Najeema",
+  brideParents: "Mr & Mrs Jawfer",
   occasion: "Nikkah Ceremony",
-  weddingDate: new Date("2027-01-10T18:00:00"),
-  dateParts: { day: "10", month: "January", year: "2027" },
-  city: "DUBAI",
-  venueTitle: "Four Seasons Hotel in Jumeirah,",
-  venueSub: "Dana Ballroom",
-  mapQuery: "Four Seasons Resort Dubai at Jumeirah Beach",
-  venueImg: "https://static.tildacdn.net/tild6462-3635-4461-a162-303965356266/Screenshot_2026-08-0.png",
+  weddingDate: new Date("2026-11-13T12:30:00"),
+  dateParts: { day: "13", month: "November", year: "2026" },
+  city: "Eravur",
+  venueTitle: "Eravur, Batticaloa",
+  venueSub: "EASCCA conference centre",
+  mapQuery: "EASCCA conference centre",
+  venueImg: "https://lh3.googleusercontent.com/grass-cs/AABkmLfxXBRJI_9Tsof5q4TUPN0716WMdjx5XDF1AlbstTxFJK-woomjwYMYp0UbHqSFqH8xZr3T9gyyeo-801LG4xBlJguuAk3RANGMVmai1Cu5TjvyRmRRbVmnM5sXq67rBbukN929apdycQmm=w408-h307-k-no",
   venueTopFlower: "https://static.tildacdn.net/tild3935-6639-4836-b366-623864343762/Group_306.png",
   venueBottomFlower: "https://static.tildacdn.net/tild3238-6635-4563-b336-356564353735/Group_305.png",
-  rsvpBy: "30 November 2026",
+  rsvpBy: "1 November 2026",
   invitationGreeting: "Dear Friends and Family",
   invitationText: "Join us for an evening of love, laughter, duas, and unforgettable memories as we begin our forever.",
   /* Timeline Assets & Data */
@@ -29,39 +29,39 @@ const DATA = {
   timelineRosette: "https://static.tildacdn.net/tild3565-6561-4334-b335-386634333338/ChatGPT_Image_Jul_6_.png",
   timeline: [
     {
-      time: "6:00 pm",
+      time: "4:00 pm",
       title: "Guest Arrival and Welcome Drinks",
       illustration: "https://static.tildacdn.net/tild3965-3466-4265-b863-373664656661/ChatGPT_Image_Jul_24.png",
       imgSide: "left",
       alt: "Guest Arrival & Welcome Drinks",
     },
     {
-      time: "6:30 pm",
+      time: "5:00 pm",
       title: "Bride Entrance",
       illustration: "https://static.tildacdn.net/tild6166-3066-4762-a161-623234663434/ChatGPT_Image_Jul_24.png",
       imgSide: "right",
       alt: "Bride Entrance",
     },
     {
-      time: "7:30 pm",
-      title: "Salat al Isha",
+      time: "5:30 pm",
+      title: "Groom Arrival",
       illustration: "https://static.tildacdn.net/tild3539-6537-4937-a165-616566313532/ChatGPT_Image_Jul_24.png",
       imgSide: "left",
-      alt: "Salat al Isha",
+      alt: "Groom Arrival",
     },
     {
-      time: "8:30 pm",
-      title: "Buffet Opening",
+      time: "6:00 pm",
+      title: "Nikkah Ceremony",
       illustration: "https://static.tildacdn.net/tild3335-3735-4630-b061-303735666263/ChatGPT_Image_Jul_24.png",
       imgSide: "right",
-      alt: "Buffet Opening",
+      alt: "Nikkah Ceremony",
     },
     {
-      time: "10:00 pm",
-      title: "Let the Fun Begin",
+      time: "7:00 pm",
+      title: "Let the celebration Begins..",
       illustration: "https://static.tildacdn.net/tild6430-6536-4230-b334-383333623035/ChatGPT_Image_Jul_24.png",
       imgSide: "left",
-      alt: "Celebration",
+      alt: "Let the celebration Begins..",
     },
   ],
   audioUrl: "https://pub-4dc8201144ca418fb604349c73e8c724.r2.dev/Einaudi_%20Divenire%20(1)%20(1).mp3",
@@ -1925,7 +1925,7 @@ function useCountdown(target) {
 /* ------------------------------------------------------------------ */
 /*  MAIN WEDDING INVITE COMPONENT                                     */
 /* ------------------------------------------------------------------ */
-export default function WeddingInvite() {
+export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
   const [data, setData] = useState(DATA);
   const [invitationId, setInvitationId] = useState(null);
   const [state, setState] = useState("overlay"); // "overlay" -> "invite"
@@ -1959,7 +1959,7 @@ export default function WeddingInvite() {
     if (!isSupabaseConfigured || !supabase) return;
 
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get("invite");
+    const slug = propSlug || params.get("invite");
 
     async function fetchInvitation() {
       try {
@@ -2048,7 +2048,7 @@ export default function WeddingInvite() {
     }
 
     fetchInvitation();
-  }, []);
+  }, [propSlug]);
 
   // Setup scroll reveal for sections and hero scroll effects
   useEffect(() => {
@@ -2538,6 +2538,45 @@ export default function WeddingInvite() {
             )}
             <div className="wi-footer-note">Hope to see you there</div>
             <div className="wi-footer-sub">DESIGNED WITH LOVE</div>
+
+            {onOpenAdmin && (
+              <div
+                style={{
+                  marginTop: "28px",
+                  display: "flex",
+                  justifyContent: "center",
+                  opacity: 0.45,
+                  transition: "opacity 0.25s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.45"; }}
+              >
+                <button
+                  type="button"
+                  onClick={onOpenAdmin}
+                  style={{
+                    background: "rgba(173, 138, 78, 0.08)",
+                    border: "1px dashed var(--gold)",
+                    color: "var(--ink-soft)",
+                    borderRadius: "20px",
+                    padding: "7px 18px",
+                    fontSize: "11px",
+                    letterSpacing: "1.5px",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    fontFamily: "Montserrat, sans-serif",
+                    fontWeight: 500,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                  title="Open Custom Admin Page to edit this wedding card"
+                >
+                  <span>⚙</span>
+                  <span>Edit Wedding Card (Admin)</span>
+                </button>
+              </div>
+            )}
           </section>
 
         </div>

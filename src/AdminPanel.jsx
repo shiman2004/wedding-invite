@@ -5,16 +5,16 @@ const DEFAULT_INVITE = {
   slug: "ayash-farwin",
   groom_name: "Ayash",
   bride_name: "Farwin",
-  groom_parents: "MR & MRS CH. HUSSAINI",
-  bride_parents: "MR & MRS CH. FAROOQI",
+  groom_parents: "Ms.Najeema",
+  bride_parents: "Mr & Mrs Jawfer",
   occasion: "Nikkah Ceremony",
-  wedding_date: "2027-01-10T18:00",
-  city: "DUBAI",
-  venue_title: "Four Seasons Hotel Jumeirah",
-  venue_sub: "Dana Ballroom",
-  map_query: "Four Seasons Resort Dubai at Jumeirah Beach",
-  venue_image_url: "https://static.tildacdn.net/tild6462-3635-4461-a162-303965356266/Screenshot_2026-08-0.png",
-  rsvp_deadline: "30 November 2026",
+  wedding_date: "2026-11-13T12:30",
+  city: "Eravur",
+  venue_title: "Eravur, Batticaloa",
+  venue_sub: "EASCCA conference centre",
+  map_query: "EASCCA conference centre",
+  venue_image_url: "https://lh3.googleusercontent.com/grass-cs/AABkmLfxXBRJI_9Tsof5q4TUPN0716WMdjx5XDF1AlbstTxFJK-woomjwYMYp0UbHqSFqH8xZr3T9gyyeo-801LG4xBlJguuAk3RANGMVmai1Cu5TjvyRmRRbVmnM5sXq67rBbukN929apdycQmm=w408-h307-k-no",
+  rsvp_deadline: "1 November 2026",
   audio_url: "https://pub-4dc8201144ca418fb604349c73e8c724.r2.dev/Einaudi_%20Divenire%20(1)%20(1).mp3",
   envelope_video_url: "/Envelope%20Cover%20Video%202.mp4",
   envelope_image_url: "/Envelope%20Cover%20Photo%203.png",
@@ -116,9 +116,9 @@ function ImageUploadField({ label, description, value, defaultValue, onChange })
   );
 }
 
-export default function AdminPanel({ onBackToInvite }) {
+export default function AdminPanel({ onBackToInvite, initialSlug }) {
   const [activeTab, setActiveTab] = useState("couple"); // couple | date | venue | media | timeline | rsvps
-  const [slug, setSlug] = useState("ayash-farwin");
+  const [slug, setSlug] = useState(initialSlug || "ayash-farwin");
   const [formData, setFormData] = useState(DEFAULT_INVITE);
   const [timeline, setTimeline] = useState([]);
   const [rsvps, setRsvps] = useState([]);
@@ -184,11 +184,11 @@ export default function AdminPanel({ onBackToInvite }) {
             setTimeline(tlData);
           } else {
             setTimeline([
-              { time: "6:00 pm", title: "Guest Arrival and Welcome Drinks", illustration_url: "https://static.tildacdn.net/tild3965-3466-4265-b863-373664656661/ChatGPT_Image_Jul_24.png", img_side: "left", order_index: 0 },
-              { time: "6:30 pm", title: "Bride Entrance", illustration_url: "https://static.tildacdn.net/tild6166-3066-4762-a161-623234663434/ChatGPT_Image_Jul_24.png", img_side: "right", order_index: 1 },
-              { time: "7:30 pm", title: "Salat al Isha", illustration_url: "https://static.tildacdn.net/tild3539-6537-4937-a165-616566313532/ChatGPT_Image_Jul_24.png", img_side: "left", order_index: 2 },
-              { time: "8:30 pm", title: "Buffet Opening", illustration_url: "https://static.tildacdn.net/tild3335-3735-4630-b061-303735666263/ChatGPT_Image_Jul_24.png", img_side: "right", order_index: 3 },
-              { time: "10:00 pm", title: "Let the Fun Begin", illustration_url: "https://static.tildacdn.net/tild6430-6536-4230-b334-383333623035/ChatGPT_Image_Jul_24.png", img_side: "left", order_index: 4 },
+              { time: "4:00 pm", title: "Guest Arrival and Welcome Drinks", illustration_url: "https://static.tildacdn.net/tild3965-3466-4265-b863-373664656661/ChatGPT_Image_Jul_24.png", img_side: "left", order_index: 0 },
+              { time: "5:00 pm", title: "Bride Entrance", illustration_url: "https://static.tildacdn.net/tild6166-3066-4762-a161-623234663434/ChatGPT_Image_Jul_24.png", img_side: "right", order_index: 1 },
+              { time: "5:30 pm", title: "Groom Arrival", illustration_url: "https://static.tildacdn.net/tild3539-6537-4937-a165-616566313532/ChatGPT_Image_Jul_24.png", img_side: "left", order_index: 2 },
+              { time: "6:00 pm", title: "Nikkah Ceremony", illustration_url: "https://static.tildacdn.net/tild3335-3735-4630-b061-303735666263/ChatGPT_Image_Jul_24.png", img_side: "right", order_index: 3 },
+              { time: "7:00 pm", title: "Let the celebration Begins..", illustration_url: "https://static.tildacdn.net/tild6430-6536-4230-b334-383333623035/ChatGPT_Image_Jul_24.png", img_side: "left", order_index: 4 },
             ]);
           }
 

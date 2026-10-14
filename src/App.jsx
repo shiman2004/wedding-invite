@@ -6,8 +6,14 @@ import AdminPanel from "./AdminPanel.jsx";
 const isAdminPath = () => window.location.pathname.replace(/\/+$/, "") === "/admin";
 
 export default function App() {
-  const [view, setView] = useState("invite"); // "invite" | "admin"
-  const [currentSlug, setCurrentSlug] = useState("ayash-farwin");
+  const [view, setView] = useState(() => (isAdminPath() ? "admin" : "invite"));
+  const [currentSlug, setCurrentSlug] = useState(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      return p.get("invite") || "ayash-farwin";
+    }
+    return "ayash-farwin";
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -29,15 +35,21 @@ export default function App() {
   }, []);
 
   const handleBackToInvite = (slug) => {
-    const url = slug ? `/?invite=${encodeURIComponent(slug)}` : "/";
+    const target = slug || currentSlug || "ayash-farwin";
+    const url = target ? `/?invite=${encodeURIComponent(target)}` : "/";
     window.history.pushState({}, "", url);
-    setCurrentSlug(slug || "ayash-farwin");
+    setCurrentSlug(target);
     setView("invite");
   };
 
+  const handleOpenAdmin = () => {
+    window.history.pushState({}, "", "/admin");
+    setView("admin");
+  };
+
   return view === "admin" ? (
-    <AdminPanel onBackToInvite={handleBackToInvite} />
+    <AdminPanel onBackToInvite={handleBackToInvite} initialSlug={currentSlug} />
   ) : (
-    <WeddingInvite />
+    <WeddingInvite slug={currentSlug} onOpenAdmin={handleOpenAdmin} />
   );
 }
