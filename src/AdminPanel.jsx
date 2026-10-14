@@ -14,8 +14,6 @@ const DEFAULT_INVITE = {
   venue_sub: "Dana Ballroom",
   map_query: "Four Seasons Resort Dubai at Jumeirah Beach",
   venue_image_url: "https://static.tildacdn.net/tild6462-3635-4461-a162-303965356266/Screenshot_2026-08-0.png",
-  verse_text: "And We created you in pairs.",
-  verse_ref: "Surah An-Naba 78:8",
   rsvp_deadline: "30 November 2026",
   audio_url: "https://pub-4dc8201144ca418fb604349c73e8c724.r2.dev/Einaudi_%20Divenire%20(1)%20(1).mp3",
   envelope_video_url: "/Envelope%20Cover%20Video%202.mp4",
@@ -30,11 +28,6 @@ const DEFAULT_INVITE = {
   venue_top_flower: "https://static.tildacdn.net/tild3935-6639-4836-b366-623864343762/Group_306.png",
   venue_bottom_flower: "https://static.tildacdn.net/tild3238-6635-4563-b336-356564353735/Group_305.png",
   timeline_flourish: "https://static.tildacdn.net/tild6262-3636-4964-a632-666535323935/ChatGPT_Image_Jul_24.png",
-  dress_code: {
-    title: "Soft Pastel Shades",
-    note: "We kindly invite our guests to dress in soft pastel shades. Please avoid wearing beige, as it is reserved for the bride and groom.",
-    palette: ["#F6E7D8", "#E8D5C4", "#D8E2DC", "#FFE5D9", "#ECE4DB"],
-  },
 };
 
 function ImageUploadField({ label, description, value, defaultValue, onChange }) {
@@ -124,7 +117,7 @@ function ImageUploadField({ label, description, value, defaultValue, onChange })
 }
 
 export default function AdminPanel({ onBackToInvite }) {
-  const [activeTab, setActiveTab] = useState("couple"); // couple | date | venue | media | timeline | rsvps | dress
+  const [activeTab, setActiveTab] = useState("couple"); // couple | date | venue | media | timeline | rsvps
   const [slug, setSlug] = useState("ayash-farwin");
   const [formData, setFormData] = useState(DEFAULT_INVITE);
   const [timeline, setTimeline] = useState([]);
@@ -167,7 +160,6 @@ export default function AdminPanel({ onBackToInvite }) {
             ...DEFAULT_INVITE,
             ...inv,
             wedding_date: dateStr || DEFAULT_INVITE.wedding_date,
-            dress_code: inv.dress_code || DEFAULT_INVITE.dress_code,
             envelope_image_url: inv.envelope_image_url || mediaAssets.envelope_image_url || DEFAULT_INVITE.envelope_image_url,
             venue_image_url: inv.venue_image_url || mediaAssets.venue_image_url || DEFAULT_INVITE.venue_image_url,
             bismillah_img: inv.bismillah_img || mediaAssets.bismillah_img || DEFAULT_INVITE.bismillah_img,
@@ -223,19 +215,6 @@ export default function AdminPanel({ onBackToInvite }) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleDressCodeChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      dress_code: { ...prev.dress_code, [field]: value },
-    }));
-  };
-
-  const handlePaletteChange = (index, color) => {
-    const newPal = [...(formData.dress_code?.palette || [])];
-    newPal[index] = color;
-    handleDressCodeChange("palette", newPal);
-  };
-
   // Timeline handlers
   const handleTimelineChange = (index, field, value) => {
     setTimeline((prev) => {
@@ -276,7 +255,7 @@ export default function AdminPanel({ onBackToInvite }) {
 
       const targetSlug = (formData.slug || slug || "ayash-farwin").trim();
 
-      // Keep all rich media assets inside the dress_code JSON object which always succeeds
+      // Rich media assets are stored in the dedicated media_assets JSON column
       const mediaAssets = {
         venue_image_url: formData.venue_image_url || DEFAULT_INVITE.venue_image_url,
         envelope_image_url: formData.envelope_image_url || DEFAULT_INVITE.envelope_image_url,
@@ -289,11 +268,6 @@ export default function AdminPanel({ onBackToInvite }) {
         venue_top_flower: formData.venue_top_flower || DEFAULT_INVITE.venue_top_flower,
         venue_bottom_flower: formData.venue_bottom_flower || DEFAULT_INVITE.venue_bottom_flower,
         timeline_flourish: formData.timeline_flourish || DEFAULT_INVITE.timeline_flourish,
-      };
-
-      const dressCodePayload = {
-        ...(formData.dress_code || DEFAULT_INVITE.dress_code),
-        media_assets: mediaAssets,
       };
 
       // Payload to submit
@@ -309,13 +283,11 @@ export default function AdminPanel({ onBackToInvite }) {
         venue_title: formData.venue_title || "",
         venue_sub: formData.venue_sub || "",
         map_query: formData.map_query || "",
-        verse_text: formData.verse_text || "",
-        verse_ref: formData.verse_ref || "",
         rsvp_deadline: formData.rsvp_deadline || "",
         audio_url: formData.audio_url || "",
         envelope_video_url: formData.envelope_video_url || "",
         hero_video_url: formData.hero_video_url || "",
-        dress_code: dressCodePayload,
+        media_assets: mediaAssets,
       };
 
       let invData = null;
@@ -529,15 +501,6 @@ export default function AdminPanel({ onBackToInvite }) {
             >
               <span className="ap-nav-icon">⏳</span>
               <span className="ap-nav-text">Timeline ({timeline.length})</span>
-            </button>
-
-            <button
-              type="button"
-              className={`ap-nav-item ${activeTab === "dress" ? "active" : ""}`}
-              onClick={() => setActiveTab("dress")}
-            >
-              <span className="ap-nav-icon">👗</span>
-              <span className="ap-nav-text">Dress Code &amp; Verse</span>
             </button>
 
             <button
@@ -999,73 +962,7 @@ export default function AdminPanel({ onBackToInvite }) {
                 </div>
               )}
 
-              {/* TAB 6: DRESS CODE & VERSE */}
-              {activeTab === "dress" && (
-                <div className="ap-section-card">
-                  <h2>👗 Dress Code &amp; Quranic Verse</h2>
-                  <p className="ap-desc">Configure the color palette guidelines and Quranic verse citation.</p>
-
-                  <div className="ap-field">
-                    <label>Dress Code Title</label>
-                    <input
-                      type="text"
-                      value={formData.dress_code?.title || ""}
-                      onChange={(e) => handleDressCodeChange("title", e.target.value)}
-                      placeholder="e.g. Soft Pastel Shades"
-                    />
-                  </div>
-
-                  <div className="ap-field">
-                    <label>Dress Code Description / Guidelines</label>
-                    <textarea
-                      rows={3}
-                      value={formData.dress_code?.note || ""}
-                      onChange={(e) => handleDressCodeChange("note", e.target.value)}
-                      placeholder="e.g. We kindly invite our guests to dress in soft pastel shades..."
-                    />
-                  </div>
-
-                  <div className="ap-field">
-                    <label>Color Palette Swatches</label>
-                    <div className="ap-palette-row">
-                      {(formData.dress_code?.palette || []).map((color, idx) => (
-                        <div key={idx} className="ap-swatch-picker">
-                          <input
-                            type="color"
-                            value={color}
-                            onChange={(e) => handlePaletteChange(idx, e.target.value)}
-                          />
-                          <span>{color}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <hr style={{ margin: "24px 0", border: "none", borderTop: "1px solid #EDE4D8" }} />
-
-                  <div className="ap-field">
-                    <label>Quranic Verse Text</label>
-                    <input
-                      type="text"
-                      value={formData.verse_text || ""}
-                      onChange={(e) => handleChange("verse_text", e.target.value)}
-                      placeholder="e.g. And We created you in pairs."
-                    />
-                  </div>
-
-                  <div className="ap-field">
-                    <label>Verse Reference</label>
-                    <input
-                      type="text"
-                      value={formData.verse_ref || ""}
-                      onChange={(e) => handleChange("verse_ref", e.target.value)}
-                      placeholder="e.g. Surah An-Naba 78:8"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 7: LIVE RSVPS */}
+              {/* TAB 6: LIVE RSVPS */}
               {activeTab === "rsvps" && (
                 <div className="ap-section-card">
                   <div className="ap-section-header">
@@ -1086,11 +983,11 @@ export default function AdminPanel({ onBackToInvite }) {
                       <div className="ap-stat-lbl">Total Responses</div>
                     </div>
                     <div className="ap-stat-card">
-                      <div className="ap-stat-val">{attendingCount}</div>
+                      <div className="ap-stat-val">{acceptedCount}</div>
                       <div className="ap-stat-lbl">Attending</div>
                     </div>
                     <div className="ap-stat-card">
-                      <div className="ap-stat-val">{totalGuestsCount}</div>
+                      <div className="ap-stat-val">{totalGuests}</div>
                       <div className="ap-stat-lbl">Total Guests</div>
                     </div>
                     <div className="ap-stat-card">
@@ -1646,35 +1543,6 @@ export default function AdminPanel({ onBackToInvite }) {
           margin-top: 10px;
         }
 
-        /* Palette Picker */
-        .ap-palette-row {
-          display: flex;
-          gap: 14px;
-          flex-wrap: wrap;
-        }
-
-        .ap-swatch-picker {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .ap-swatch-picker input[type="color"] {
-          width: 44px;
-          height: 44px;
-          border: none;
-          cursor: pointer;
-          border-radius: 8px;
-          padding: 0;
-          background: none;
-        }
-
-        .ap-swatch-picker span {
-          font-size: 11px;
-          font-family: monospace;
-          color: #666;
-        }
 
         /* Timeline Items */
         .ap-section-header {

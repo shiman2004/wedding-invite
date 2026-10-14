@@ -10,8 +10,6 @@ const DATA = {
   groomParents: "MR & MRS CH. HUSSAINI",
   brideParents: "MR & MRS CH. FAROOQI",
   occasion: "Nikkah Ceremony",
-  verse: "And We created you in pairs.",
-  verseRef: "Surah An-Naba 78:8",
   weddingDate: new Date("2027-01-10T18:00:00"),
   dateParts: { day: "10", month: "January", year: "2027" },
   city: "DUBAI",
@@ -66,11 +64,6 @@ const DATA = {
       alt: "Celebration",
     },
   ],
-  dressCode: {
-    title: "Soft Pastel Shades",
-    note: "We kindly invite our guests to dress in soft pastel shades. Please avoid wearing beige, as it is reserved for the bride and groom.",
-    palette: ["#F6E7D8", "#E8D5C4", "#D8E2DC", "#FFE5D9", "#ECE4DB"],
-  },
   audioUrl: "https://pub-4dc8201144ca418fb604349c73e8c724.r2.dev/Einaudi_%20Divenire%20(1)%20(1).mp3",
   envelopeImg: "/Envelope%20Cover%20Photo%203.png",
   envelopeVideo: "/Envelope%20Cover%20Video%202.mp4",
@@ -184,6 +177,74 @@ body {
 @media (max-width: 600px) {
   .wei-envelope-media {
     object-fit: cover;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .wi-section,
+  .wi-arch-section,
+  .wi-venue-section,
+  .wi-timeline-section {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .wi-section,
+  .wi-arch-section,
+  .wi-venue-section,
+  .wi-tl-spine-line,
+  .wi-tl-row,
+  .wi-tl-node,
+  .wi-tl-img-box,
+  .wi-tl-img,
+  .wi-tl-text-box {
+    will-change: auto !important;
+  }
+
+  .wi-tl-spine-line {
+    transition: none !important;
+    transform: translateX(-50%) scaleY(1) !important;
+  }
+
+  .wi-tl-row .wi-tl-node,
+  .wi-tl-row .wi-tl-left .wi-tl-img-box,
+  .wi-tl-row .wi-tl-left .wi-tl-text-box,
+  .wi-tl-row .wi-tl-right .wi-tl-img-box,
+  .wi-tl-row .wi-tl-right .wi-tl-text-box {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .wi-tl-row .wi-tl-img {
+    animation: none !important;
+  }
+
+  .wi-hero-content {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .wi-hero-video {
+    transform: none !important;
+  }
+
+  .wi-floral-wrapper-left,
+  .wi-floral-wrapper-right,
+  .wi-arch-flower-wrapper-left,
+  .wi-arch-flower-wrapper-right,
+  .wi-venue-flower-top-wrapper,
+  .wi-venue-flower-bottom-wrapper {
+    transform: none !important;
   }
 }
 
@@ -356,7 +417,7 @@ body {
 }
 
 /* Swaying Corner Floral Arrangements */
-.wi-floral-left {
+.wi-floral-wrapper-left {
   position: absolute;
   bottom: 0;
   left: -20px;
@@ -364,10 +425,9 @@ body {
   height: auto;
   z-index: 3;
   pointer-events: none;
-  animation: floralSwayLeft 7s ease-in-out infinite alternate;
 }
 
-.wi-floral-right {
+.wi-floral-wrapper-right {
   position: absolute;
   bottom: 0;
   right: -20px;
@@ -375,6 +435,19 @@ body {
   height: auto;
   z-index: 3;
   pointer-events: none;
+}
+
+.wi-floral-left {
+  width: 100%;
+  height: auto;
+  display: block;
+  animation: floralSwayLeft 7s ease-in-out infinite alternate;
+}
+
+.wi-floral-right {
+  width: 100%;
+  height: auto;
+  display: block;
   animation: floralSwayRight 7.5s ease-in-out infinite alternate;
 }
 
@@ -529,6 +602,16 @@ body {
   text-align: center;
   position: relative;
   background: #FDF6EE;
+  /* Global section reveal base state */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--reveal-delay, 0s), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--reveal-delay, 0s);
+  will-change: opacity, transform;
+}
+
+.wi-section.wi-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .wi-section + .wi-section {
@@ -665,6 +748,16 @@ body {
   position: relative;
   overflow: hidden;
   border-top: 1px solid var(--line);
+  /* Arch section reveal */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--reveal-delay, 0s), transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--reveal-delay, 0s);
+  will-change: opacity, transform;
+}
+
+.wi-arch-section.wi-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .wi-arch-container {
@@ -855,7 +948,7 @@ body {
   z-index: 2;
 }
 
-.wi-arch-flower-left {
+.wi-arch-flower-wrapper-left {
   position: absolute;
   bottom: 0px;
   left: -12px;
@@ -864,10 +957,9 @@ body {
   height: auto;
   z-index: 3;
   pointer-events: none;
-  opacity: 0.95;
 }
 
-.wi-arch-flower-right {
+.wi-arch-flower-wrapper-right {
   position: absolute;
   bottom: 0px;
   right: -12px;
@@ -876,30 +968,20 @@ body {
   height: auto;
   z-index: 3;
   pointer-events: none;
+}
+
+.wi-arch-flower-left {
+  width: 100%;
+  height: auto;
+  display: block;
   opacity: 0.95;
 }
 
-/* ============================================================
-   VERSE
-   ============================================================ */
-.wi-verse-section {
-  background: #F8EFE4;
-}
-
-.wi-verse {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-style: italic;
-  font-size: 24px;
-  line-height: 1.5;
-  color: var(--ink);
-}
-
-.wi-verse-ref {
-  margin-top: 12px;
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  letter-spacing: 2px;
-  color: var(--gold-deep);
+.wi-arch-flower-right {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0.95;
 }
 
 /* ============================================================
@@ -982,7 +1064,8 @@ body {
   bottom: 14px;
   left: 50%;
   width: 1px;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top;
   background: linear-gradient(180deg, 
     rgba(128, 107, 67, 0.25) 0%, 
     rgba(128, 107, 67, 0.75) 8%, 
@@ -990,6 +1073,26 @@ body {
     rgba(128, 107, 67, 0.25) 100%
   );
   z-index: 1;
+  transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s;
+  will-change: transform;
+}
+
+.wi-timeline-section.wi-reveal-visible .wi-tl-spine-line {
+  transform: translateX(-50%) scaleY(1);
+}
+
+.wi-timeline-section .wi-tl-node {
+  transition-delay: calc(var(--tl-delay, 0s) + 0.08s);
+}
+
+.wi-timeline-section .wi-tl-left .wi-tl-img-box,
+.wi-timeline-section .wi-tl-left .wi-tl-text-box {
+  transition-delay: var(--tl-delay, 0s);
+}
+
+.wi-timeline-section .wi-tl-right .wi-tl-img-box,
+.wi-timeline-section .wi-tl-right .wi-tl-text-box {
+  transition-delay: calc(var(--tl-delay, 0s) + 0.04s);
 }
 
 .wi-tl-rows {
@@ -1146,20 +1249,20 @@ body {
 .wi-tl-row.wi-tl-visible .wi-tl-left .wi-tl-text-box {
   opacity: 1;
   transform: translateX(0) scale(1);
-  transition-delay: var(--tl-delay, 0s);
+  transition-delay: calc(var(--tl-delay, 0s) + 0.02s);
 }
 
 .wi-tl-row.wi-tl-visible .wi-tl-right .wi-tl-img-box,
 .wi-tl-row.wi-tl-visible .wi-tl-right .wi-tl-text-box {
   opacity: 1;
   transform: translateX(0) scale(1);
-  transition-delay: calc(var(--tl-delay, 0s) + 0.08s);
+  transition-delay: calc(var(--tl-delay, 0s) + 0.06s);
 }
 
 .wi-tl-row.wi-tl-visible .wi-tl-node {
   opacity: 1;
   transform: scale(1) rotate(0deg);
-  transition-delay: calc(var(--tl-delay, 0s) + 0.14s);
+  transition-delay: calc(var(--tl-delay, 0s) + 0.1s);
 }
 
 /* Subtle gentle floating animation once visible */
@@ -1248,41 +1351,6 @@ body {
   width: 100%;
   height: 100%;
   border: 0;
-}
-
-/* ============================================================
-   DRESS CODE & GIFT PREFERENCES
-   ============================================================ */
-.wi-swatches {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 22px 0 16px;
-}
-
-.wi-swatch {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid #FFFDF8;
-  box-shadow: 0 0 0 1px var(--line), 0 4px 8px -2px rgba(62, 49, 35, 0.15);
-}
-
-.wi-dress-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 8px;
-}
-
-.wi-dress-note {
-  font-size: 16px;
-  font-style: italic;
-  line-height: 1.5;
-  color: var(--ink-soft);
-  max-width: 300px;
-  margin: 0 auto;
 }
 
 /* ============================================================
@@ -1454,6 +1522,16 @@ body {
   background: #FDF4EB;
   overflow: hidden;
   border-top: 1px solid var(--line);
+  /* Venue section reveal */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--reveal-delay, 0s), transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--reveal-delay, 0s);
+  will-change: opacity, transform;
+}
+
+.wi-venue-section.wi-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .wi-venue-flower-top {
@@ -1765,8 +1843,8 @@ function TimelineRow({ item, index }) {
         }
       },
       {
-        threshold: 0.15,
-        rootMargin: "0px 0px -30px 0px",
+        threshold: 0.12,
+        rootMargin: "0px 0px -20px 0px",
       }
     );
 
@@ -1782,7 +1860,7 @@ function TimelineRow({ item, index }) {
       className={`wi-tl-row ${isLeftImg ? "wi-tl-row-left-img" : "wi-tl-row-right-img"} ${isVisible ? "wi-tl-visible" : ""
         }`}
       style={{
-        "--tl-delay": `${index * 0.08}s`,
+        "--tl-delay": `${index * 0.06}s`,
       }}
     >
       {/* Left Slot */}
@@ -1864,6 +1942,15 @@ export default function WeddingInvite() {
   const audioRef = useRef(null);
   const videoRef = useRef(null);
   const heroVideoRef = useRef(null);
+  const heroRef = useRef(null);
+  const heroContentRef = useRef(null);
+  const floralLeftWrapRef = useRef(null);
+  const floralRightWrapRef = useRef(null);
+  const floralArchLeftWrapRef = useRef(null);
+  const floralArchRightWrapRef = useRef(null);
+  const venueTopWrapRef = useRef(null);
+  const venueBottomWrapRef = useRef(null);
+  const sectionRefs = useRef([]);
 
   const { d, h, m, s } = useCountdown(data.weddingDate);
 
@@ -1903,7 +1990,7 @@ export default function WeddingInvite() {
             }
             : DATA.dateParts;
 
-          const mediaAssets = inv.media_assets || inv.dress_code?.media_assets || {};
+          const mediaAssets = inv.media_assets || {};
 
           setData((prev) => ({
             ...prev,
@@ -1919,14 +2006,11 @@ export default function WeddingInvite() {
             venueSub: inv.venue_sub || prev.venueSub,
             mapQuery: inv.map_query || prev.mapQuery,
             venueImg: inv.venue_image_url || mediaAssets.venue_image_url || prev.venueImg,
-            verse: inv.verse_text || prev.verse,
-            verseRef: inv.verse_ref || prev.verseRef,
             rsvpBy: inv.rsvp_deadline || prev.rsvpBy,
             audioUrl: inv.audio_url || prev.audioUrl,
             envelopeVideo: inv.envelope_video_url || prev.envelopeVideo,
             envelopeImg: inv.envelope_image_url || mediaAssets.envelope_image_url || prev.envelopeImg,
             heroVideo: inv.hero_video_url || prev.heroVideo,
-            dressCode: inv.dress_code || prev.dressCode,
             bismillahImg: inv.bismillah_img || mediaAssets.bismillah_img || prev.bismillahImg,
             archFrameImg: inv.arch_frame_img || mediaAssets.arch_frame_img || prev.archFrameImg,
             archFloralLeft: inv.arch_floral_left || mediaAssets.arch_floral_left || prev.archFloralLeft,
@@ -1964,6 +2048,110 @@ export default function WeddingInvite() {
     }
 
     fetchInvitation();
+  }, []);
+
+  // Setup scroll reveal for sections and hero scroll effects
+  useEffect(() => {
+    // Section reveals
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("wi-reveal-visible");
+            sectionObserver.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.12,
+        rootMargin: "0px 0px -10px 0px",
+      }
+    );
+
+    // Observe all sections
+    const sections = document.querySelectorAll(".wi-reveal");
+    sections.forEach((el, idx) => {
+      // Add staggered delay via CSS custom property
+      el.style.setProperty("--reveal-delay", `${Math.min(idx * 0.04, 0.2)}s`);
+      sectionObserver.observe(el);
+    });
+
+    // Also handle elements that might already be in view
+    setTimeout(() => {
+      sections.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.95) {
+          el.classList.add("wi-reveal-visible");
+        }
+      });
+    }, 150);
+
+    // Hero scroll effects
+    let rafId = null;
+    const heroEl = heroRef.current;
+    const heroContentEl = heroContentRef.current;
+    const heroVideoEl = heroVideoRef.current;
+    const floralLeftWrapEl = floralLeftWrapRef.current;
+    const floralRightWrapEl = floralRightWrapRef.current;
+    const floralArchLeftWrapEl = floralArchLeftWrapRef.current;
+    const floralArchRightWrapEl = floralArchRightWrapRef.current;
+    const venueTopWrapEl = venueTopWrapRef.current;
+    const venueBottomWrapEl = venueBottomWrapRef.current;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const handleScroll = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (!heroEl) return;
+        const rect = heroEl.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const scrollProgress = Math.max(0, Math.min(1, -rect.top / (viewportHeight * 0.4)));
+
+        if (!prefersReducedMotion) {
+          if (heroContentEl) {
+            heroContentEl.style.opacity = String(Math.max(0, 1 - scrollProgress * 1.15));
+            heroContentEl.style.transform = `translateY(-${scrollProgress * 12}px)`;
+          }
+          if (heroVideoEl) {
+            const scale = 1.03 - scrollProgress * 0.03;
+            heroVideoEl.style.transform = `scale(${Math.max(1.0, scale)})`;
+          }
+          // Very subtle floral parallax (10-15px max)
+          if (floralLeftWrapEl) {
+            floralLeftWrapEl.style.transform = `translateY(${scrollProgress * 12}px)`;
+          }
+          if (floralRightWrapEl) {
+            floralRightWrapEl.style.transform = `translateY(${scrollProgress * 12}px)`;
+          }
+          if (floralArchLeftWrapEl) {
+            floralArchLeftWrapEl.style.transform = `translateY(${scrollProgress * 8}px)`;
+          }
+          if (floralArchRightWrapEl) {
+            floralArchRightWrapEl.style.transform = `translateY(${scrollProgress * 8}px)`;
+          }
+          if (venueTopWrapEl) {
+            venueTopWrapEl.style.transform = `translateY(${scrollProgress * 6}px)`;
+          }
+          if (venueBottomWrapEl) {
+            venueBottomWrapEl.style.transform = `translateY(${scrollProgress * 6}px)`;
+          }
+        }
+      });
+    };
+
+    if (!prefersReducedMotion) {
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      handleScroll();
+    }
+
+    return () => {
+      sectionObserver.disconnect();
+      if (!prefersReducedMotion) {
+        window.removeEventListener("scroll", handleScroll);
+      }
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Handle Envelope Tap: play video and audio seamlessly in place
@@ -2108,7 +2296,7 @@ export default function WeddingInvite() {
           {/* ============================================================
               HERO / FIRST PAGE
              ============================================================ */}
-          <section className="wi-hero">
+          <section className="wi-hero" ref={heroRef}>
             {/* Background Looping Video */}
             <div className="wi-hero-video-wrap">
               <video
@@ -2130,11 +2318,15 @@ export default function WeddingInvite() {
             <div className="wi-hero-bottom-fade" />
 
             {/* Swaying Corner Floral Bouquets */}
-            <img className="wi-floral-left" src={data.floralLeft} alt="floral decoration" />
-            <img className="wi-floral-right" src={data.floralRight} alt="floral decoration" />
+            <div className="wi-floral-wrapper-left" ref={floralLeftWrapRef}>
+              <img className="wi-floral-left" src={data.floralLeft} alt="floral decoration" />
+            </div>
+            <div className="wi-floral-wrapper-right" ref={floralRightWrapRef}>
+              <img className="wi-floral-right" src={data.floralRight} alt="floral decoration" />
+            </div>
 
             {/* Arch Center Typography Overlay */}
-            <div className="wi-hero-content">
+            <div className="wi-hero-content" ref={heroContentRef}>
               <div className="wi-hero-eyebrow">Welcome to the</div>
               <div className="wi-hero-occasion">{data.occasion}</div>
               <div className="wi-hero-of-wrap">
@@ -2159,7 +2351,7 @@ export default function WeddingInvite() {
           {/* ============================================================
               SCRATCH DATE
              ============================================================ */}
-          <section className="wi-section">
+          <section className="wi-section wi-reveal">
             <h2 className="wi-script-title">The Date</h2>
             <div className="wi-hint">
               <span className="wi-star">✦</span> Scratch to reveal the date <span className="wi-star">✦</span>
@@ -2174,7 +2366,7 @@ export default function WeddingInvite() {
           {/* ============================================================
               AUTHENTIC 3D ISLAMIC ARCH INVITATION CARD
              ============================================================ */}
-          <section className="wi-arch-section">
+          <section className="wi-arch-section wi-reveal">
             <div className="wi-arch-container">
               {/* 3D Embossed Arch Frame */}
               <img className="wi-arch-frame-bg" src={data.archFrameImg} alt="Islamic Arch Frame" />
@@ -2208,23 +2400,19 @@ export default function WeddingInvite() {
               </div>
 
               {/* Bottom Floral Bouquets at base of arch */}
-              <img className="wi-arch-flower-left" src={data.archFloralLeft} alt="flowers" />
-              <img className="wi-arch-flower-right" src={data.archFloralRight} alt="flowers" />
+              <div className="wi-arch-flower-wrapper-left" ref={floralArchLeftWrapRef}>
+                <img className="wi-arch-flower-left" src={data.archFloralLeft} alt="flowers" />
+              </div>
+              <div className="wi-arch-flower-wrapper-right" ref={floralArchRightWrapRef}>
+                <img className="wi-arch-flower-right" src={data.archFloralRight} alt="flowers" />
+              </div>
             </div>
-          </section>
-
-          {/* ============================================================
-              QURANIC VERSE
-             ============================================================ */}
-          <section className="wi-section wi-verse-section">
-            <div className="wi-verse">&ldquo;{data.verse}&rdquo;</div>
-            <div className="wi-verse-ref">({data.verseRef})</div>
           </section>
 
           {/* ============================================================
               TIMELINE (AUTHENTIC TIMELESS GRACE & SCROLL-REVEAL)
              ============================================================ */}
-          <section className="wi-section wi-timeline-section">
+          <section className="wi-section wi-timeline-section wi-reveal">
             <h2 className="wi-timeline-script-title">Wedding Timeline</h2>
             {data.timelineFlourish && (
               <div className="wi-timeline-flourish">
@@ -2258,7 +2446,7 @@ export default function WeddingInvite() {
           {/* ============================================================
               COUNTDOWN
              ============================================================ */}
-          <section className="wi-section">
+          <section className="wi-section wi-reveal">
             <div className="wi-heading">The Celebration Begins</div>
             <div className="wi-countdown">
               <div className="wi-count-unit">
@@ -2286,9 +2474,11 @@ export default function WeddingInvite() {
           {/* ============================================================
               AUTHENTIC TIMELESS GRACE LOCATION & VENUE
              ============================================================ */}
-          <section className="wi-venue-section">
+          <section className="wi-venue-section wi-reveal">
             {/* Top-Right Decorative Flower Bouquet */}
-            <img className="wi-venue-flower-top" src={data.venueTopFlower || DATA.venueTopFlower} alt="" />
+            <div className="wi-venue-flower-top-wrapper" ref={venueTopWrapRef}>
+              <img className="wi-venue-flower-top" src={data.venueTopFlower || DATA.venueTopFlower} alt="" />
+            </div>
 
             {/* Cursive Title & Diamond Flourish */}
             <h2 className="wi-venue-script-title">Location</h2>
@@ -2310,7 +2500,9 @@ export default function WeddingInvite() {
                 src={data.venueImg || data.venue_image_url || DATA.venueImg}
                 alt={data.venueTitle}
               />
-              <img className="wi-venue-flower-bottom" src={data.venueBottomFlower || DATA.venueBottomFlower} alt="" />
+              <div className="wi-venue-flower-bottom-wrapper" ref={venueBottomWrapRef}>
+                <img className="wi-venue-flower-bottom" src={data.venueBottomFlower || DATA.venueBottomFlower} alt="" />
+              </div>
             </div>
 
             {/* Open in Maps Button */}
@@ -2328,25 +2520,9 @@ export default function WeddingInvite() {
           </section>
 
           {/* ============================================================
-              DRESS CODE
-             ============================================================ */}
-          <section className="wi-section">
-            <div className="wi-heading">Attire</div>
-            <h2 className="wi-script-title">Dress Code</h2>
-            <div className="wi-rule" />
-            <div className="wi-swatches">
-              {data.dressCode.palette.map((c) => (
-                <span className="wi-swatch" style={{ background: c }} key={c} />
-              ))}
-            </div>
-            <div className="wi-dress-title">{data.dressCode.title}</div>
-            <div className="wi-dress-note">{data.dressCode.note}</div>
-          </section>
-
-          {/* ============================================================
               RSVP
              ============================================================ */}
-          <section className="wi-section">
+          <section className="wi-section wi-reveal">
             <div className="wi-heading">Join Our Celebration</div>
             <h2 className="wi-script-title">Confirm Your Attendance</h2>
             <div className="wi-rule" />
