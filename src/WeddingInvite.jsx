@@ -2538,45 +2538,6 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
             )}
             <div className="wi-footer-note">Hope to see you there</div>
             <div className="wi-footer-sub">DESIGNED WITH LOVE</div>
-
-            {onOpenAdmin && (
-              <div
-                style={{
-                  marginTop: "28px",
-                  display: "flex",
-                  justifyContent: "center",
-                  opacity: 0.45,
-                  transition: "opacity 0.25s ease",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.45"; }}
-              >
-                <button
-                  type="button"
-                  onClick={onOpenAdmin}
-                  style={{
-                    background: "rgba(173, 138, 78, 0.08)",
-                    border: "1px dashed var(--gold)",
-                    color: "var(--ink-soft)",
-                    borderRadius: "20px",
-                    padding: "7px 18px",
-                    fontSize: "11px",
-                    letterSpacing: "1.5px",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    fontFamily: "Montserrat, sans-serif",
-                    fontWeight: 500,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                  title="Open Custom Admin Page to edit this wedding card"
-                >
-                  <span>⚙</span>
-                  <span>Edit Wedding Card (Admin)</span>
-                </button>
-              </div>
-            )}
           </section>
 
         </div>
