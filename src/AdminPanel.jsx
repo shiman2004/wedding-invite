@@ -116,7 +116,31 @@ function ImageUploadField({ label, description, value, defaultValue, onChange })
   );
 }
 
+const AUTH_KEY = "wedding_admin_authenticated";
+const CUSTOM_PASS_KEY = "wedding_admin_password";
+const DEFAULT_PASSWORDS = [
+  (import.meta.env.VITE_ADMIN_PASSWORD || "").trim(),
+  "ayash2026",
+  "admin123",
+  "ayash-farwin",
+].filter(Boolean);
+
 export default function AdminPanel({ onBackToInvite, initialSlug }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      sessionStorage.getItem(AUTH_KEY) === "true" ||
+      localStorage.getItem(AUTH_KEY) === "true"
+    );
+  });
+  const [passwordInput, setPasswordInput] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showChangePassModal, setShowChangePassModal] = useState(false);
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [changePassSuccess, setChangePassSuccess] = useState(false);
+
   const [activeTab, setActiveTab] = useState("couple"); // couple | date | venue | media | timeline | rsvps
   const [slug, setSlug] = useState(initialSlug || "ayash-farwin");
   const [formData, setFormData] = useState(DEFAULT_INVITE);
@@ -127,8 +151,42 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const handleLogin = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const input = passwordInput.trim();
+    if (!input) {
+      setAuthError("Please enter the admin password");
+      return;
+    }
+    const customPass = localStorage.getItem(CUSTOM_PASS_KEY);
+    const validPasswords = customPass
+      ? [customPass, ...DEFAULT_PASSWORDS]
+      : DEFAULT_PASSWORDS;
+
+    if (validPasswords.includes(input)) {
+      setIsAuthenticated(true);
+      setAuthError("");
+      if (rememberMe) {
+        localStorage.setItem(AUTH_KEY, "true");
+      } else {
+        sessionStorage.setItem(AUTH_KEY, "true");
+      }
+    } else {
+      setAuthError("Incorrect password. Please try again.");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(AUTH_KEY);
+    setIsAuthenticated(false);
+    setPasswordInput("");
+    setAuthError("");
+  };
+
   // Load invitation & RSVPs from Supabase
   useEffect(() => {
+    if (!isAuthenticated) return;
     async function loadData() {
       if (!isSupabaseConfigured || !supabase) {
         setLoading(false);
@@ -209,7 +267,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
     }
 
     loadData();
-  }, [slug]);
+  }, [slug, isAuthenticated]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -387,6 +445,251 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
   const acceptedCount = rsvps.filter((r) => r.attending === "yes").length;
   const declinedCount = rsvps.filter((r) => r.attending === "no").length;
 
+  if (!isAuthenticated) {
+    return (
+      <div className="ap-lock-root">
+        <div className="ap-lock-card">
+          <div className="ap-lock-badge">
+            <span>🔒</span>
+          </div>
+          <div className="ap-lock-brand">Ayash & Farwin</div>
+          <h1 className="ap-lock-title">Wedding Admin Portal</h1>
+          <p className="ap-lock-desc">
+            This administration page is protected. Please enter the passcode to access and customize the wedding invitation.
+          </p>
+
+          <form onSubmit={handleLogin} className="ap-lock-form">
+            <div className="ap-lock-input-wrap">
+              <input
+                type={showPassword ? "text" : "password"}
+                className={`ap-lock-input ${authError ? "ap-lock-input-error" : ""}`}
+                placeholder="Enter admin passcode..."
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value);
+                  if (authError) setAuthError("");
+                }}
+                autoFocus
+              />
+              <button
+                type="button"
+                className="ap-lock-eye-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Hide passcode" : "Show passcode"}
+                tabIndex={-1}
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
+
+            {authError && (
+              <div className="ap-lock-error">
+                <span>⚠️</span>
+                <span>{authError}</span>
+              </div>
+            )}
+
+            <label className="ap-lock-remember">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span>Keep me logged in on this browser</span>
+            </label>
+
+            <button type="submit" className="ap-lock-submit-btn">
+              <span>Unlock Admin Panel</span>
+              <span>→</span>
+            </button>
+          </form>
+
+          <div className="ap-lock-footer">
+            <button
+              type="button"
+              className="ap-lock-back-btn"
+              onClick={() => onBackToInvite && onBackToInvite(slug)}
+            >
+              ← Return to Wedding Invitation
+            </button>
+          </div>
+        </div>
+
+        <style>{`
+          .ap-lock-root {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 20%, #FAF5EE 0%, #EFE8DC 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #3B2E1E;
+            padding: 24px;
+            box-sizing: border-box;
+          }
+          .ap-lock-card {
+            max-width: 440px;
+            width: 100%;
+            background: #FFFFFF;
+            border: 1px solid #E4D7C8;
+            border-radius: 20px;
+            padding: 44px 36px 36px;
+            box-shadow: 0 20px 48px rgba(74, 53, 28, 0.1);
+            text-align: center;
+            box-sizing: border-box;
+          }
+          .ap-lock-badge {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #FAF6EF;
+            border: 1.5px solid #D8C7B5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 26px;
+            box-shadow: 0 4px 12px rgba(138, 107, 52, 0.1);
+          }
+          .ap-lock-brand {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #8A6B34;
+            margin-bottom: 6px;
+          }
+          .ap-lock-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4A351C;
+            margin: 0 0 10px;
+            letter-spacing: -0.3px;
+          }
+          .ap-lock-desc {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: #7A654E;
+            margin: 0 0 28px;
+          }
+          .ap-lock-form {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+          }
+          .ap-lock-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+          }
+          .ap-lock-input {
+            width: 100%;
+            padding: 13px 44px 13px 16px;
+            background: #FAF8F5;
+            border: 1.5px solid #D8C7B5;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #4A351C;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+          }
+          .ap-lock-input:focus {
+            background: #FFFFFF;
+            border-color: #8A6B34;
+            box-shadow: 0 0 0 3.5px rgba(138, 107, 52, 0.14);
+          }
+          .ap-lock-input-error {
+            border-color: #E74C3C !important;
+            background: #FFF8F8 !important;
+          }
+          .ap-lock-eye-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.55;
+            padding: 4px;
+            transition: opacity 0.2s;
+          }
+          .ap-lock-eye-btn:hover {
+            opacity: 1;
+          }
+          .ap-lock-error {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #FDF2F2;
+            border: 1px solid #F6B8B8;
+            border-radius: 8px;
+            color: #A32727;
+            font-size: 12.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .ap-lock-remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #6E5330;
+            margin: 16px 0 22px;
+            cursor: pointer;
+            user-select: none;
+          }
+          .ap-lock-remember input {
+            accent-color: #8A6B34;
+            cursor: pointer;
+          }
+          .ap-lock-submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 13px 20px;
+            background: linear-gradient(135deg, #9C7A3E 0%, #80612A 100%);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(138, 107, 52, 0.28);
+            transition: all 0.2s;
+          }
+          .ap-lock-submit-btn:hover {
+            background: linear-gradient(135deg, #8A6B34 0%, #705423 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(138, 107, 52, 0.35);
+          }
+          .ap-lock-footer {
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid #EFE4D6;
+          }
+          .ap-lock-back-btn {
+            background: none;
+            border: none;
+            color: #8A6B34;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+          }
+          .ap-lock-back-btn:hover {
+            color: #5C4325;
+            text-decoration: underline;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="ap-root">
       {/* Sleek Modern Top Navigation Bar */}
@@ -419,6 +722,24 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           >
             <span>Live Preview</span>
             <span>↗</span>
+          </button>
+          <button
+            type="button"
+            className="ap-btn-ghost"
+            onClick={() => setShowChangePassModal(true)}
+            title="Change the Admin Passcode"
+          >
+            <span>🔑</span>
+            <span>Passcode</span>
+          </button>
+          <button
+            type="button"
+            className="ap-btn-ghost"
+            onClick={handleLogout}
+            title="Lock and Log out of Admin Panel"
+          >
+            <span>🚪</span>
+            <span>Log Out</span>
           </button>
           <button
             type="button"
@@ -1052,7 +1373,115 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
         </main>
       </div>
 
+      {/* Change Password Modal */}
+      {showChangePassModal && (
+        <div className="ap-modal-backdrop" onClick={() => setShowChangePassModal(false)}>
+          <div className="ap-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="ap-modal-header">
+              <h3 style={{ margin: 0, fontSize: "17px", color: "#4A351C" }}>🔑 Change Admin Passcode</h3>
+              <button
+                type="button"
+                className="ap-modal-close"
+                onClick={() => setShowChangePassModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="ap-modal-body">
+              <p style={{ fontSize: "13px", color: "#7A654E", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Set a custom password to protect your admin dashboard. Anyone visiting <code>/admin</code> will need to enter this passcode.
+              </p>
+              <div className="ap-field-group">
+                <label className="ap-label">New Admin Passcode</label>
+                <input
+                  type="text"
+                  className="ap-input"
+                  placeholder="e.g. MyWedding2026"
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              {changePassSuccess && (
+                <div style={{ color: "#1A6C35", background: "#EAF8EF", border: "1px solid #A8E4BA", padding: "8px 12px", borderRadius: "8px", fontSize: "13px", margin: "14px 0", fontWeight: "600" }}>
+                  ✓ Passcode updated successfully!
+                </div>
+              )}
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "22px" }}>
+                <button
+                  type="button"
+                  className="ap-btn-ghost"
+                  onClick={() => setShowChangePassModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="ap-btn-primary"
+                  onClick={() => {
+                    if (newPasswordInput.trim()) {
+                      localStorage.setItem(CUSTOM_PASS_KEY, newPasswordInput.trim());
+                      setChangePassSuccess(true);
+                      setTimeout(() => {
+                        setChangePassSuccess(false);
+                        setShowChangePassModal(false);
+                        setNewPasswordInput("");
+                      }, 1200);
+                    }
+                  }}
+                >
+                  Save Passcode
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        /* Modal Styles */
+        .ap-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(40, 28, 14, 0.45);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          padding: 20px;
+        }
+        .ap-modal-card {
+          background: #FFFFFF;
+          border-radius: 16px;
+          box-shadow: 0 20px 48px rgba(40, 28, 14, 0.2);
+          max-width: 460px;
+          width: 100%;
+          border: 1px solid #E2D4C3;
+          overflow: hidden;
+        }
+        .ap-modal-header {
+          padding: 18px 24px;
+          border-bottom: 1px solid #EFE4D6;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .ap-modal-close {
+          background: none;
+          border: none;
+          font-size: 24px;
+          color: #8C755E;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .ap-modal-close:hover {
+          color: #4A351C;
+        }
+        .ap-modal-body {
+          padding: 24px;
+        }
+
         /* ============================================================
            ADMIN PANEL LUXURY MODERN DASHBOARD DESIGN SYSTEM
            ============================================================ */
