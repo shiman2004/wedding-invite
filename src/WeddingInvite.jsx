@@ -116,6 +116,43 @@ body {
   box-sizing: border-box;
 }
 
+/* Scoped Live Preview inside Admin Dashboard */
+.wi-root.wi-in-preview {
+  min-height: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  background: transparent !important;
+  align-items: stretch !important;
+}
+
+.wi-root.wi-in-preview .wei-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 50 !important;
+  height: 100% !important;
+}
+
+.wi-root.wi-in-preview .wi-modal-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 60 !important;
+}
+
+.wi-root.wi-in-preview .wei-audio-btn {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  z-index: 40 !important;
+}
+
+.wi-root.wi-in-preview .wi-frame {
+  margin: 0 auto !important;
+  min-height: 100% !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
 .wi-frame {
   width: 100%;
   max-width: 440px;
@@ -1925,10 +1962,52 @@ function useCountdown(target) {
 /* ------------------------------------------------------------------ */
 /*  MAIN WEDDING INVITE COMPONENT                                     */
 /* ------------------------------------------------------------------ */
-export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
-  const [data, setData] = useState(DATA);
+export default function WeddingInvite({
+  slug: propSlug,
+  onOpenAdmin,
+  previewData,
+  previewTimeline,
+  isLivePreview = false,
+  previewEnvelopeState,
+}) {
+  const [data, setData] = useState(() => {
+    if (previewData) {
+      const wDate = previewData.wedding_date ? new Date(previewData.wedding_date) : null;
+      return {
+        ...DATA,
+        partnerA: previewData.groom_name || DATA.partnerA,
+        partnerB: previewData.bride_name || DATA.partnerB,
+        groomParents: previewData.groom_parents || DATA.groomParents,
+        brideParents: previewData.bride_parents || DATA.brideParents,
+        occasion: previewData.occasion || DATA.occasion,
+        weddingDate: wDate && !isNaN(wDate.getTime()) ? wDate : DATA.weddingDate,
+        city: previewData.city || DATA.city,
+        venueTitle: previewData.venue_title || DATA.venueTitle,
+        venueSub: previewData.venue_sub || DATA.venueSub,
+        mapQuery: previewData.map_query || DATA.mapQuery,
+        venueImg: previewData.venue_image_url || DATA.venueImg,
+        rsvpBy: previewData.rsvp_deadline || DATA.rsvpBy,
+        audioUrl: previewData.audio_url || DATA.audioUrl,
+        envelopeVideo: previewData.envelope_video_url || DATA.envelopeVideo,
+        envelopeImg: previewData.envelope_image_url || DATA.envelopeImg,
+        heroVideo: previewData.hero_video_url || DATA.heroVideo,
+        bismillahImg: previewData.bismillah_img || DATA.bismillahImg,
+        archFrameImg: previewData.arch_frame_img || DATA.archFrameImg,
+        archFloralLeft: previewData.arch_floral_left || DATA.archFloralLeft,
+        archFloralRight: previewData.arch_floral_right || DATA.archFloralRight,
+        floralLeft: previewData.floral_left || DATA.floralLeft,
+        floralRight: previewData.floral_right || DATA.floralRight,
+        venueTopFlower: previewData.venue_top_flower || DATA.venueTopFlower,
+        venueBottomFlower: previewData.venue_bottom_flower || DATA.venueBottomFlower,
+        timelineFlourish: previewData.timeline_flourish || DATA.timelineFlourish,
+      };
+    }
+    return DATA;
+  });
   const [invitationId, setInvitationId] = useState(null);
-  const [state, setState] = useState("overlay"); // "overlay" -> "invite"
+  const [state, setState] = useState(() =>
+    isLivePreview ? (previewEnvelopeState || "invite") : "overlay"
+  );
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
@@ -1954,8 +2033,67 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
 
   const { d, h, m, s } = useCountdown(data.weddingDate);
 
+  // Live Preview Data sync
+  useEffect(() => {
+    if (!previewData) return;
+    const wDate = previewData.wedding_date ? new Date(previewData.wedding_date) : null;
+    const dateParts = wDate && !isNaN(wDate.getTime())
+      ? {
+          day: String(wDate.getDate()),
+          month: wDate.toLocaleString("en-US", { month: "long" }),
+          year: String(wDate.getFullYear()),
+        }
+      : DATA.dateParts;
+
+    setData((prev) => ({
+      ...prev,
+      partnerA: previewData.groom_name !== undefined ? previewData.groom_name : prev.partnerA,
+      partnerB: previewData.bride_name !== undefined ? previewData.bride_name : prev.partnerB,
+      groomParents: previewData.groom_parents !== undefined ? previewData.groom_parents : prev.groomParents,
+      brideParents: previewData.bride_parents !== undefined ? previewData.bride_parents : prev.brideParents,
+      occasion: previewData.occasion !== undefined ? previewData.occasion : prev.occasion,
+      weddingDate: wDate && !isNaN(wDate.getTime()) ? wDate : prev.weddingDate,
+      dateParts,
+      city: previewData.city !== undefined ? previewData.city : prev.city,
+      venueTitle: previewData.venue_title !== undefined ? previewData.venue_title : prev.venueTitle,
+      venueSub: previewData.venue_sub !== undefined ? previewData.venue_sub : prev.venueSub,
+      mapQuery: previewData.map_query !== undefined ? previewData.map_query : prev.mapQuery,
+      venueImg: previewData.venue_image_url || prev.venueImg,
+      rsvpBy: previewData.rsvp_deadline !== undefined ? previewData.rsvp_deadline : prev.rsvpBy,
+      audioUrl: previewData.audio_url || prev.audioUrl,
+      envelopeVideo: previewData.envelope_video_url || prev.envelopeVideo,
+      envelopeImg: previewData.envelope_image_url || prev.envelopeImg,
+      heroVideo: previewData.hero_video_url || prev.heroVideo,
+      bismillahImg: previewData.bismillah_img || prev.bismillahImg,
+      archFrameImg: previewData.arch_frame_img || prev.archFrameImg,
+      archFloralLeft: previewData.arch_floral_left || prev.archFloralLeft,
+      archFloralRight: previewData.arch_floral_right || prev.archFloralRight,
+      floralLeft: previewData.floral_left || prev.floralLeft,
+      floralRight: previewData.floral_right || prev.floralRight,
+      venueTopFlower: previewData.venue_top_flower || prev.venueTopFlower,
+      venueBottomFlower: previewData.venue_bottom_flower || prev.venueBottomFlower,
+      timelineFlourish: previewData.timeline_flourish || prev.timelineFlourish,
+      timeline: (previewTimeline && previewTimeline.length > 0)
+        ? previewTimeline.map((ev, i) => ({
+            time: ev.time || "",
+            title: ev.title || "",
+            illustration: ev.illustration_url || prev.timelineRosette,
+            imgSide: ev.img_side || (i % 2 === 0 ? "left" : "right"),
+            alt: ev.title || "Event",
+          }))
+        : prev.timeline,
+    }));
+  }, [previewData, previewTimeline]);
+
+  useEffect(() => {
+    if (isLivePreview && previewEnvelopeState) {
+      setState(previewEnvelopeState);
+    }
+  }, [isLivePreview, previewEnvelopeState]);
+
   // Fetch invitation data from Supabase on mount
   useEffect(() => {
+    if (isLivePreview) return; // In live preview mode, use previewData props directly!
     if (!isSupabaseConfigured || !supabase) return;
 
     const params = new URLSearchParams(window.location.search);
@@ -2237,7 +2375,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
   };
 
   return (
-    <div className="wi-root">
+    <div className={`wi-root ${isLivePreview ? "wi-in-preview" : ""}`}>
       <style>{CSS}</style>
 
       {/* Background Audio */}

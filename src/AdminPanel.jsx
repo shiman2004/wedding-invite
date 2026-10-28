@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "./supabase";
+import WeddingInvite from "./WeddingInvite.jsx";
 
 const DEFAULT_INVITE = {
   slug: "ayash-farwin",
@@ -150,6 +151,11 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Live preview layout & device states
+  const [previewDevice, setPreviewDevice] = useState("mobile"); // "mobile" | "tablet"
+  const [previewEnvelopeState, setPreviewEnvelopeState] = useState("invite"); // "invite" | "overlay"
+  const [activeViewMode, setActiveViewMode] = useState("split"); // "split" | "editOnly" | "previewOnly"
 
   const handleLogin = (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -714,13 +720,44 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
         </div>
 
         <div className="ap-navbar-actions">
+          {/* View Mode Switcher: Split View / Edit Only / Preview Only */}
+          <div className="ap-view-switcher">
+            <button
+              type="button"
+              className={`ap-view-btn ${activeViewMode === "split" ? "active" : ""}`}
+              onClick={() => setActiveViewMode("split")}
+              title="Side-by-side: Edit on Left, Live Preview on Right"
+            >
+              <span>◫</span>
+              <span>Split View</span>
+            </button>
+            <button
+              type="button"
+              className={`ap-view-btn ${activeViewMode === "editOnly" ? "active" : ""}`}
+              onClick={() => setActiveViewMode("editOnly")}
+              title="Full Width Edit Form"
+            >
+              <span>✏️</span>
+              <span>Edit Only</span>
+            </button>
+            <button
+              type="button"
+              className={`ap-view-btn ${activeViewMode === "previewOnly" ? "active" : ""}`}
+              onClick={() => setActiveViewMode("previewOnly")}
+              title="Full Preview Only"
+            >
+              <span>👁️</span>
+              <span>Preview</span>
+            </button>
+          </div>
+
           <button
             type="button"
             className="ap-btn-ghost"
             onClick={() => onBackToInvite && onBackToInvite(formData.slug || slug)}
-            title="Open live wedding invitation in preview mode"
+            title="Open live wedding invitation website"
           >
-            <span>Live Preview</span>
+            <span>Live Site</span>
             <span>↗</span>
           </button>
           <button
@@ -774,8 +811,11 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
         </div>
       )}
 
-      {/* Main Workspace */}
-      <div className="ap-layout">
+      {/* Main Workspace: Split Screen Layout */}
+      <div className={`ap-split-workspace ap-view-${activeViewMode}`}>
+        {/* Left Side: Admin Editable Controls */}
+        <div className="ap-split-editor">
+          <div className="ap-layout">
         {/* Sidebar Navigation */}
         <aside className="ap-sidebar">
           <div className="ap-sidebar-menu">
@@ -1371,6 +1411,76 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             </form>
           )}
         </main>
+          </div>
+        </div>
+
+        {/* Right Side: Synchronized Live Preview */}
+        <div className="ap-split-preview">
+          <div className="ap-preview-panel">
+            <div className="ap-preview-header">
+              <div className="ap-preview-title-box">
+                <span className="ap-live-badge">
+                  <span className="ap-pulse-dot" />
+                  LIVE PREVIEW
+                </span>
+                <span className="ap-preview-hint">Updates automatically as you type</span>
+              </div>
+
+              <div className="ap-preview-tools">
+                {/* Envelope vs Card View */}
+                <div className="ap-seg-control">
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewEnvelopeState === "invite" ? "active" : ""}`}
+                    onClick={() => setPreviewEnvelopeState("invite")}
+                    title="View Full Wedding Invitation Card"
+                  >
+                    💌 Full Card
+                  </button>
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewEnvelopeState === "overlay" ? "active" : ""}`}
+                    onClick={() => setPreviewEnvelopeState("overlay")}
+                    title="View Envelope Video Cover"
+                  >
+                    ✉️ Envelope
+                  </button>
+                </div>
+
+                {/* Device Frame */}
+                <div className="ap-seg-control">
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewDevice === "mobile" ? "active" : ""}`}
+                    onClick={() => setPreviewDevice("mobile")}
+                    title="Mobile View (390px)"
+                  >
+                    📱 Mobile
+                  </button>
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewDevice === "tablet" ? "active" : ""}`}
+                    onClick={() => setPreviewDevice("tablet")}
+                    title="Expanded View"
+                  >
+                    💻 Full
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="ap-preview-viewport">
+              <div className={`ap-device-shell ap-shell-${previewDevice}`}>
+                <WeddingInvite
+                  previewData={formData}
+                  previewTimeline={timeline}
+                  isLivePreview={true}
+                  previewEnvelopeState={previewEnvelopeState}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Change Password Modal */}
@@ -1480,6 +1590,249 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
         }
         .ap-modal-body {
           padding: 24px;
+        }
+
+        /* ============================================================
+           SPLIT SCREEN WORKSPACE LAYOUT & LIVE PREVIEW
+           ============================================================ */
+        .ap-split-workspace {
+          display: flex;
+          width: 100%;
+          min-height: calc(100vh - 69px);
+          align-items: stretch;
+          background: #F8F5F0;
+        }
+
+        .ap-split-editor {
+          flex: 1 1 54%;
+          min-width: 0;
+          border-right: 1px solid #E5D7C7;
+          overflow-y: auto;
+          max-height: calc(100vh - 69px);
+          background: #F8F5F0;
+        }
+
+        .ap-split-editor .ap-layout {
+          max-width: 100%;
+          margin: 0;
+          padding: 20px 20px 60px;
+          gap: 18px;
+        }
+
+        .ap-split-editor .ap-sidebar {
+          width: 210px;
+          top: 20px;
+        }
+
+        .ap-split-preview {
+          flex: 1 1 46%;
+          min-width: 360px;
+          background: #181410;
+          position: sticky;
+          top: 69px;
+          height: calc(100vh - 69px);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        /* View Mode Overrides */
+        .ap-split-workspace.ap-view-editOnly .ap-split-editor {
+          flex: 1 1 100%;
+          border-right: none;
+          max-height: none;
+        }
+        .ap-split-workspace.ap-view-editOnly .ap-split-editor .ap-layout {
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 28px 24px 60px;
+          gap: 28px;
+        }
+        .ap-split-workspace.ap-view-editOnly .ap-split-editor .ap-sidebar {
+          width: 250px;
+          top: 86px;
+        }
+        .ap-split-workspace.ap-view-editOnly .ap-split-preview {
+          display: none;
+        }
+
+        .ap-split-workspace.ap-view-previewOnly .ap-split-editor {
+          display: none;
+        }
+        .ap-split-workspace.ap-view-previewOnly .ap-split-preview {
+          flex: 1 1 100%;
+        }
+
+        /* View Switcher in Navbar */
+        .ap-view-switcher {
+          display: flex;
+          align-items: center;
+          background: #FAF5EE;
+          border: 1px solid #E2D4C3;
+          border-radius: 8px;
+          padding: 3px;
+          gap: 2px;
+        }
+
+        .ap-view-btn {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 11px;
+          background: transparent;
+          border: none;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #7A654E;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-view-btn:hover {
+          color: #4A351C;
+        }
+
+        .ap-view-btn.active {
+          background: #8A6B34;
+          color: #FFFFFF;
+          box-shadow: 0 2px 6px rgba(138, 107, 52, 0.25);
+        }
+
+        /* Live Preview Panel UI */
+        .ap-preview-panel {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          width: 100%;
+        }
+
+        .ap-preview-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 18px;
+          background: #231E19;
+          border-bottom: 1px solid #383027;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .ap-preview-title-box {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .ap-live-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.8px;
+          color: #E6C88A;
+          background: rgba(230, 200, 138, 0.1);
+          border: 1px solid rgba(230, 200, 138, 0.25);
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
+
+        .ap-pulse-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #2ECC71;
+          box-shadow: 0 0 8px #2ECC71;
+          animation: apPulse 1.8s infinite;
+        }
+
+        @keyframes apPulse {
+          0% { transform: scale(0.9); opacity: 0.8; }
+          50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 12px #2ECC71; }
+          100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
+        .ap-preview-hint {
+          font-size: 11.5px;
+          color: #8C7B6B;
+        }
+
+        .ap-preview-tools {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .ap-seg-control {
+          display: flex;
+          background: #15110E;
+          border: 1px solid #332B22;
+          border-radius: 7px;
+          padding: 2px;
+          gap: 2px;
+        }
+
+        .ap-seg-btn {
+          background: transparent;
+          border: none;
+          color: #A89582;
+          font-size: 11.5px;
+          font-weight: 600;
+          padding: 5px 9px;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-seg-btn:hover {
+          color: #EDE1D1;
+        }
+
+        .ap-seg-btn.active {
+          background: #8A6B34;
+          color: #FFFFFF;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        }
+
+        .ap-preview-viewport {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          background: radial-gradient(circle at 50% 30%, #25201A 0%, #120F0C 100%);
+          overflow: hidden;
+          box-sizing: border-box;
+        }
+
+        .ap-device-shell {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background: #F9F0E0;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          display: flex;
+          flex-direction: column;
+        }
+
+        .ap-device-shell.ap-shell-mobile {
+          width: 390px;
+          max-height: 820px;
+          border-radius: 36px;
+          border: 10px solid #2B251E;
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(173, 138, 78, 0.3);
+        }
+
+        .ap-device-shell.ap-shell-tablet {
+          width: 100%;
+          max-width: 520px;
+          height: 100%;
+          border-radius: 18px;
+          border: 3px solid #3B332A;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         }
 
         /* ============================================================
@@ -2121,6 +2474,21 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           text-align: center;
           padding: 40px;
           color: #8A7763;
+        }
+
+        @media (max-width: 1080px) {
+          .ap-split-workspace {
+            flex-direction: column;
+          }
+          .ap-split-editor {
+            max-height: none;
+            overflow-y: visible;
+          }
+          .ap-split-preview {
+            position: static;
+            height: 720px;
+            max-height: 85vh;
+          }
         }
 
         @media (max-width: 860px) {
