@@ -116,6 +116,89 @@ body {
   box-sizing: border-box;
 }
 
+/* Scoped Live Preview inside Admin Dashboard */
+.wi-root.wi-in-preview {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  position: relative !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scroll-behavior: smooth !important;
+  background: transparent !important;
+}
+
+.wi-root.wi-in-preview::-webkit-scrollbar {
+  width: 6px !important;
+}
+.wi-root.wi-in-preview::-webkit-scrollbar-track {
+  background: rgba(138, 107, 52, 0.08) !important;
+}
+.wi-root.wi-in-preview::-webkit-scrollbar-thumb {
+  background: #8A6B34 !important;
+  border-radius: 4px !important;
+}
+.wi-root.wi-in-preview::-webkit-scrollbar-thumb:hover {
+  background: #6E5330 !important;
+}
+
+.wi-root.wi-in-preview .wei-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 50 !important;
+  height: 100% !important;
+}
+
+.wi-root.wi-in-preview .wi-modal-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 60 !important;
+}
+
+.wi-root.wi-in-preview .wei-audio-btn {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  z-index: 40 !important;
+}
+
+.wi-root.wi-in-preview .wi-frame {
+  margin: 0 auto !important;
+  min-height: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.wi-root.wi-in-preview .wi-hero {
+  height: auto !important;
+  min-height: 480px !important;
+}
+
+.wi-root.wi-in-preview .wi-content {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.wi-root.wi-in-preview .wi-section,
+.wi-root.wi-in-preview .wi-arch-section,
+.wi-root.wi-in-preview .wi-venue-section,
+.wi-root.wi-in-preview .wi-timeline-section {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+.wi-root.wi-in-preview .wi-tl-spine-line,
+.wi-root.wi-in-preview .wi-tl-row,
+.wi-root.wi-in-preview .wi-tl-node {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
 .wi-frame {
   width: 100%;
   max-width: 440px;
@@ -1925,10 +2008,52 @@ function useCountdown(target) {
 /* ------------------------------------------------------------------ */
 /*  MAIN WEDDING INVITE COMPONENT                                     */
 /* ------------------------------------------------------------------ */
-export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
-  const [data, setData] = useState(DATA);
+export default function WeddingInvite({
+  slug: propSlug,
+  onOpenAdmin,
+  previewData,
+  previewTimeline,
+  isLivePreview = false,
+  previewEnvelopeState,
+}) {
+  const [data, setData] = useState(() => {
+    if (previewData) {
+      const wDate = previewData.wedding_date ? new Date(previewData.wedding_date) : null;
+      return {
+        ...DATA,
+        partnerA: previewData.groom_name || DATA.partnerA,
+        partnerB: previewData.bride_name || DATA.partnerB,
+        groomParents: previewData.groom_parents || DATA.groomParents,
+        brideParents: previewData.bride_parents || DATA.brideParents,
+        occasion: previewData.occasion || DATA.occasion,
+        weddingDate: wDate && !isNaN(wDate.getTime()) ? wDate : DATA.weddingDate,
+        city: previewData.city || DATA.city,
+        venueTitle: previewData.venue_title || DATA.venueTitle,
+        venueSub: previewData.venue_sub || DATA.venueSub,
+        mapQuery: previewData.map_query || DATA.mapQuery,
+        venueImg: previewData.venue_image_url || DATA.venueImg,
+        rsvpBy: previewData.rsvp_deadline || DATA.rsvpBy,
+        audioUrl: previewData.audio_url || DATA.audioUrl,
+        envelopeVideo: previewData.envelope_video_url || DATA.envelopeVideo,
+        envelopeImg: previewData.envelope_image_url || DATA.envelopeImg,
+        heroVideo: previewData.hero_video_url || DATA.heroVideo,
+        bismillahImg: previewData.bismillah_img || DATA.bismillahImg,
+        archFrameImg: previewData.arch_frame_img || DATA.archFrameImg,
+        archFloralLeft: previewData.arch_floral_left || DATA.archFloralLeft,
+        archFloralRight: previewData.arch_floral_right || DATA.archFloralRight,
+        floralLeft: previewData.floral_left || DATA.floralLeft,
+        floralRight: previewData.floral_right || DATA.floralRight,
+        venueTopFlower: previewData.venue_top_flower || DATA.venueTopFlower,
+        venueBottomFlower: previewData.venue_bottom_flower || DATA.venueBottomFlower,
+        timelineFlourish: previewData.timeline_flourish || DATA.timelineFlourish,
+      };
+    }
+    return DATA;
+  });
   const [invitationId, setInvitationId] = useState(null);
-  const [state, setState] = useState("overlay"); // "overlay" -> "invite"
+  const [state, setState] = useState(() =>
+    isLivePreview ? (previewEnvelopeState || "invite") : "overlay"
+  );
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showRsvpModal, setShowRsvpModal] = useState(false);
@@ -1954,8 +2079,67 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
 
   const { d, h, m, s } = useCountdown(data.weddingDate);
 
+  // Live Preview Data sync
+  useEffect(() => {
+    if (!previewData) return;
+    const wDate = previewData.wedding_date ? new Date(previewData.wedding_date) : null;
+    const dateParts = wDate && !isNaN(wDate.getTime())
+      ? {
+          day: String(wDate.getDate()),
+          month: wDate.toLocaleString("en-US", { month: "long" }),
+          year: String(wDate.getFullYear()),
+        }
+      : DATA.dateParts;
+
+    setData((prev) => ({
+      ...prev,
+      partnerA: previewData.groom_name !== undefined ? previewData.groom_name : prev.partnerA,
+      partnerB: previewData.bride_name !== undefined ? previewData.bride_name : prev.partnerB,
+      groomParents: previewData.groom_parents !== undefined ? previewData.groom_parents : prev.groomParents,
+      brideParents: previewData.bride_parents !== undefined ? previewData.bride_parents : prev.brideParents,
+      occasion: previewData.occasion !== undefined ? previewData.occasion : prev.occasion,
+      weddingDate: wDate && !isNaN(wDate.getTime()) ? wDate : prev.weddingDate,
+      dateParts,
+      city: previewData.city !== undefined ? previewData.city : prev.city,
+      venueTitle: previewData.venue_title !== undefined ? previewData.venue_title : prev.venueTitle,
+      venueSub: previewData.venue_sub !== undefined ? previewData.venue_sub : prev.venueSub,
+      mapQuery: previewData.map_query !== undefined ? previewData.map_query : prev.mapQuery,
+      venueImg: previewData.venue_image_url || prev.venueImg,
+      rsvpBy: previewData.rsvp_deadline !== undefined ? previewData.rsvp_deadline : prev.rsvpBy,
+      audioUrl: previewData.audio_url || prev.audioUrl,
+      envelopeVideo: previewData.envelope_video_url || prev.envelopeVideo,
+      envelopeImg: previewData.envelope_image_url || prev.envelopeImg,
+      heroVideo: previewData.hero_video_url || prev.heroVideo,
+      bismillahImg: previewData.bismillah_img || prev.bismillahImg,
+      archFrameImg: previewData.arch_frame_img || prev.archFrameImg,
+      archFloralLeft: previewData.arch_floral_left || prev.archFloralLeft,
+      archFloralRight: previewData.arch_floral_right || prev.archFloralRight,
+      floralLeft: previewData.floral_left || prev.floralLeft,
+      floralRight: previewData.floral_right || prev.floralRight,
+      venueTopFlower: previewData.venue_top_flower || prev.venueTopFlower,
+      venueBottomFlower: previewData.venue_bottom_flower || prev.venueBottomFlower,
+      timelineFlourish: previewData.timeline_flourish || prev.timelineFlourish,
+      timeline: (previewTimeline && previewTimeline.length > 0)
+        ? previewTimeline.map((ev, i) => ({
+            time: ev.time || "",
+            title: ev.title || "",
+            illustration: ev.illustration_url || prev.timelineRosette,
+            imgSide: ev.img_side || (i % 2 === 0 ? "left" : "right"),
+            alt: ev.title || "Event",
+          }))
+        : prev.timeline,
+    }));
+  }, [previewData, previewTimeline]);
+
+  useEffect(() => {
+    if (isLivePreview && previewEnvelopeState) {
+      setState(previewEnvelopeState);
+    }
+  }, [isLivePreview, previewEnvelopeState]);
+
   // Fetch invitation data from Supabase on mount
   useEffect(() => {
+    if (isLivePreview) return; // In live preview mode, use previewData props directly!
     if (!isSupabaseConfigured || !supabase) return;
 
     const params = new URLSearchParams(window.location.search);
@@ -2237,7 +2421,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
   };
 
   return (
-    <div className="wi-root">
+    <div className={`wi-root ${isLivePreview ? "wi-in-preview" : ""}`}>
       <style>{CSS}</style>
 
       {/* Background Audio */}
@@ -2296,7 +2480,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
           {/* ============================================================
               HERO / FIRST PAGE
              ============================================================ */}
-          <section className="wi-hero" ref={heroRef}>
+          <section className="wi-hero" id="preview-hero" ref={heroRef}>
             {/* Background Looping Video */}
             <div className="wi-hero-video-wrap">
               <video
@@ -2351,7 +2535,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
           {/* ============================================================
               SCRATCH DATE
              ============================================================ */}
-          <section className="wi-section wi-reveal">
+          <section className="wi-section wi-reveal" id="preview-date">
             <h2 className="wi-script-title">The Date</h2>
             <div className="wi-hint">
               <span className="wi-star">✦</span> Scratch to reveal the date <span className="wi-star">✦</span>
@@ -2366,7 +2550,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
           {/* ============================================================
               AUTHENTIC 3D ISLAMIC ARCH INVITATION CARD
              ============================================================ */}
-          <section className="wi-arch-section wi-reveal">
+          <section className="wi-arch-section wi-reveal" id="preview-couple">
             <div className="wi-arch-container">
               {/* 3D Embossed Arch Frame */}
               <img className="wi-arch-frame-bg" src={data.archFrameImg} alt="Islamic Arch Frame" />
@@ -2412,7 +2596,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
           {/* ============================================================
               TIMELINE (AUTHENTIC TIMELESS GRACE & SCROLL-REVEAL)
              ============================================================ */}
-          <section className="wi-section wi-timeline-section wi-reveal">
+          <section className="wi-section wi-timeline-section wi-reveal" id="preview-timeline">
             <h2 className="wi-timeline-script-title">Wedding Timeline</h2>
             {data.timelineFlourish && (
               <div className="wi-timeline-flourish">
@@ -2446,7 +2630,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
           {/* ============================================================
               COUNTDOWN
              ============================================================ */}
-          <section className="wi-section wi-reveal">
+          <section className="wi-section wi-reveal" id="preview-countdown">
             <div className="wi-heading">The Celebration Begins</div>
             <div className="wi-countdown">
               <div className="wi-count-unit">
@@ -2474,7 +2658,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
           {/* ============================================================
               AUTHENTIC TIMELESS GRACE LOCATION & VENUE
              ============================================================ */}
-          <section className="wi-venue-section wi-reveal">
+          <section className="wi-venue-section wi-reveal" id="preview-venue">
             {/* Top-Right Decorative Flower Bouquet */}
             <div className="wi-venue-flower-top-wrapper" ref={venueTopWrapRef}>
               <img className="wi-venue-flower-top" src={data.venueTopFlower || DATA.venueTopFlower} alt="" />
@@ -2522,7 +2706,7 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
           {/* ============================================================
               RSVP
              ============================================================ */}
-          <section className="wi-section wi-reveal">
+          <section className="wi-section wi-reveal" id="preview-rsvp">
             <div className="wi-heading">Join Our Celebration</div>
             <h2 className="wi-script-title">Confirm Your Attendance</h2>
             <div className="wi-rule" />
@@ -2538,45 +2722,6 @@ export default function WeddingInvite({ slug: propSlug, onOpenAdmin }) {
             )}
             <div className="wi-footer-note">Hope to see you there</div>
             <div className="wi-footer-sub">DESIGNED WITH LOVE</div>
-
-            {onOpenAdmin && (
-              <div
-                style={{
-                  marginTop: "28px",
-                  display: "flex",
-                  justifyContent: "center",
-                  opacity: 0.45,
-                  transition: "opacity 0.25s ease",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.45"; }}
-              >
-                <button
-                  type="button"
-                  onClick={onOpenAdmin}
-                  style={{
-                    background: "rgba(173, 138, 78, 0.08)",
-                    border: "1px dashed var(--gold)",
-                    color: "var(--ink-soft)",
-                    borderRadius: "20px",
-                    padding: "7px 18px",
-                    fontSize: "11px",
-                    letterSpacing: "1.5px",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    fontFamily: "Montserrat, sans-serif",
-                    fontWeight: 500,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                  title="Open Custom Admin Page to edit this wedding card"
-                >
-                  <span>⚙</span>
-                  <span>Edit Wedding Card (Admin)</span>
-                </button>
-              </div>
-            )}
           </section>
 
         </div>

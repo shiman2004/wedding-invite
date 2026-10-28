@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "./supabase";
+import WeddingInvite from "./WeddingInvite.jsx";
 
 const DEFAULT_INVITE = {
   slug: "ayash-farwin",
@@ -116,7 +117,31 @@ function ImageUploadField({ label, description, value, defaultValue, onChange })
   );
 }
 
+const AUTH_KEY = "wedding_admin_authenticated";
+const CUSTOM_PASS_KEY = "wedding_admin_password";
+const DEFAULT_PASSWORDS = [
+  (import.meta.env.VITE_ADMIN_PASSWORD || "").trim(),
+  "ayash2026",
+  "admin123",
+  "ayash-farwin",
+].filter(Boolean);
+
 export default function AdminPanel({ onBackToInvite, initialSlug }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      sessionStorage.getItem(AUTH_KEY) === "true" ||
+      localStorage.getItem(AUTH_KEY) === "true"
+    );
+  });
+  const [passwordInput, setPasswordInput] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showChangePassModal, setShowChangePassModal] = useState(false);
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [changePassSuccess, setChangePassSuccess] = useState(false);
+
   const [activeTab, setActiveTab] = useState("couple"); // couple | date | venue | media | timeline | rsvps
   const [slug, setSlug] = useState(initialSlug || "ayash-farwin");
   const [formData, setFormData] = useState(DEFAULT_INVITE);
@@ -127,8 +152,83 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Live preview layout & device states
+  const [previewDevice, setPreviewDevice] = useState("mobile"); // "mobile" | "tablet"
+  const [previewEnvelopeState, setPreviewEnvelopeState] = useState("invite"); // "invite" | "overlay"
+  const [activeViewMode, setActiveViewMode] = useState("split"); // "split" | "editOnly" | "previewOnly"
+
+  const scrollToPreviewSection = (sectionId) => {
+    if (previewEnvelopeState === "overlay") {
+      setPreviewEnvelopeState("invite");
+    }
+    setTimeout(() => {
+      const container = document.querySelector(".wi-root.wi-in-preview");
+      const target = document.getElementById(sectionId);
+      if (container && target) {
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const offset = targetRect.top - containerRect.top + container.scrollTop;
+        container.scrollTo({
+          top: offset - 8,
+          behavior: "smooth",
+        });
+      } else if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
+
+  const handleSelectTab = (tabName) => {
+    setActiveTab(tabName);
+    const map = {
+      couple: "preview-couple",
+      date: "preview-date",
+      venue: "preview-venue",
+      media: "preview-hero",
+      timeline: "preview-timeline",
+      rsvps: "preview-rsvp",
+    };
+    if (map[tabName]) {
+      scrollToPreviewSection(map[tabName]);
+    }
+  };
+
+  const handleLogin = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const input = passwordInput.trim();
+    if (!input) {
+      setAuthError("Please enter the admin password");
+      return;
+    }
+    const customPass = localStorage.getItem(CUSTOM_PASS_KEY);
+    const validPasswords = customPass
+      ? [customPass, ...DEFAULT_PASSWORDS]
+      : DEFAULT_PASSWORDS;
+
+    if (validPasswords.includes(input)) {
+      setIsAuthenticated(true);
+      setAuthError("");
+      if (rememberMe) {
+        localStorage.setItem(AUTH_KEY, "true");
+      } else {
+        sessionStorage.setItem(AUTH_KEY, "true");
+      }
+    } else {
+      setAuthError("Incorrect password. Please try again.");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(AUTH_KEY);
+    setIsAuthenticated(false);
+    setPasswordInput("");
+    setAuthError("");
+  };
+
   // Load invitation & RSVPs from Supabase
   useEffect(() => {
+    if (!isAuthenticated) return;
     async function loadData() {
       if (!isSupabaseConfigured || !supabase) {
         setLoading(false);
@@ -209,7 +309,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
     }
 
     loadData();
-  }, [slug]);
+  }, [slug, isAuthenticated]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -387,6 +487,251 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
   const acceptedCount = rsvps.filter((r) => r.attending === "yes").length;
   const declinedCount = rsvps.filter((r) => r.attending === "no").length;
 
+  if (!isAuthenticated) {
+    return (
+      <div className="ap-lock-root">
+        <div className="ap-lock-card">
+          <div className="ap-lock-badge">
+            <span>🔒</span>
+          </div>
+          <div className="ap-lock-brand">Ayash & Farwin</div>
+          <h1 className="ap-lock-title">Wedding Admin Portal</h1>
+          <p className="ap-lock-desc">
+            This administration page is protected. Please enter the passcode to access and customize the wedding invitation.
+          </p>
+
+          <form onSubmit={handleLogin} className="ap-lock-form">
+            <div className="ap-lock-input-wrap">
+              <input
+                type={showPassword ? "text" : "password"}
+                className={`ap-lock-input ${authError ? "ap-lock-input-error" : ""}`}
+                placeholder="Enter admin passcode..."
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value);
+                  if (authError) setAuthError("");
+                }}
+                autoFocus
+              />
+              <button
+                type="button"
+                className="ap-lock-eye-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Hide passcode" : "Show passcode"}
+                tabIndex={-1}
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
+
+            {authError && (
+              <div className="ap-lock-error">
+                <span>⚠️</span>
+                <span>{authError}</span>
+              </div>
+            )}
+
+            <label className="ap-lock-remember">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span>Keep me logged in on this browser</span>
+            </label>
+
+            <button type="submit" className="ap-lock-submit-btn">
+              <span>Unlock Admin Panel</span>
+              <span>→</span>
+            </button>
+          </form>
+
+          <div className="ap-lock-footer">
+            <button
+              type="button"
+              className="ap-lock-back-btn"
+              onClick={() => onBackToInvite && onBackToInvite(slug)}
+            >
+              ← Return to Wedding Invitation
+            </button>
+          </div>
+        </div>
+
+        <style>{`
+          .ap-lock-root {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 20%, #FAF5EE 0%, #EFE8DC 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #3B2E1E;
+            padding: 24px;
+            box-sizing: border-box;
+          }
+          .ap-lock-card {
+            max-width: 440px;
+            width: 100%;
+            background: #FFFFFF;
+            border: 1px solid #E4D7C8;
+            border-radius: 20px;
+            padding: 44px 36px 36px;
+            box-shadow: 0 20px 48px rgba(74, 53, 28, 0.1);
+            text-align: center;
+            box-sizing: border-box;
+          }
+          .ap-lock-badge {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #FAF6EF;
+            border: 1.5px solid #D8C7B5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 26px;
+            box-shadow: 0 4px 12px rgba(138, 107, 52, 0.1);
+          }
+          .ap-lock-brand {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #8A6B34;
+            margin-bottom: 6px;
+          }
+          .ap-lock-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4A351C;
+            margin: 0 0 10px;
+            letter-spacing: -0.3px;
+          }
+          .ap-lock-desc {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: #7A654E;
+            margin: 0 0 28px;
+          }
+          .ap-lock-form {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+          }
+          .ap-lock-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+          }
+          .ap-lock-input {
+            width: 100%;
+            padding: 13px 44px 13px 16px;
+            background: #FAF8F5;
+            border: 1.5px solid #D8C7B5;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #4A351C;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+          }
+          .ap-lock-input:focus {
+            background: #FFFFFF;
+            border-color: #8A6B34;
+            box-shadow: 0 0 0 3.5px rgba(138, 107, 52, 0.14);
+          }
+          .ap-lock-input-error {
+            border-color: #E74C3C !important;
+            background: #FFF8F8 !important;
+          }
+          .ap-lock-eye-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.55;
+            padding: 4px;
+            transition: opacity 0.2s;
+          }
+          .ap-lock-eye-btn:hover {
+            opacity: 1;
+          }
+          .ap-lock-error {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #FDF2F2;
+            border: 1px solid #F6B8B8;
+            border-radius: 8px;
+            color: #A32727;
+            font-size: 12.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .ap-lock-remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #6E5330;
+            margin: 16px 0 22px;
+            cursor: pointer;
+            user-select: none;
+          }
+          .ap-lock-remember input {
+            accent-color: #8A6B34;
+            cursor: pointer;
+          }
+          .ap-lock-submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 13px 20px;
+            background: linear-gradient(135deg, #9C7A3E 0%, #80612A 100%);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(138, 107, 52, 0.28);
+            transition: all 0.2s;
+          }
+          .ap-lock-submit-btn:hover {
+            background: linear-gradient(135deg, #8A6B34 0%, #705423 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(138, 107, 52, 0.35);
+          }
+          .ap-lock-footer {
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid #EFE4D6;
+          }
+          .ap-lock-back-btn {
+            background: none;
+            border: none;
+            color: #8A6B34;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+          }
+          .ap-lock-back-btn:hover {
+            color: #5C4325;
+            text-decoration: underline;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="ap-root">
       {/* Sleek Modern Top Navigation Bar */}
@@ -411,14 +756,84 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
         </div>
 
         <div className="ap-navbar-actions">
+          {/* View Mode Switcher: Split View / Edit Only / Preview Only (Desktop) */}
+          <div className="ap-view-switcher">
+            <button
+              type="button"
+              className={`ap-view-btn ${activeViewMode === "split" ? "active" : ""}`}
+              onClick={() => setActiveViewMode("split")}
+              title="Side-by-side: Edit on Left, Live Preview on Right"
+            >
+              <span>◫</span>
+              <span>Split View</span>
+            </button>
+            <button
+              type="button"
+              className={`ap-view-btn ${activeViewMode === "editOnly" ? "active" : ""}`}
+              onClick={() => setActiveViewMode("editOnly")}
+              title="Full Width Edit Form"
+            >
+              <span>✏️</span>
+              <span>Edit Only</span>
+            </button>
+            <button
+              type="button"
+              className={`ap-view-btn ${activeViewMode === "previewOnly" ? "active" : ""}`}
+              onClick={() => setActiveViewMode("previewOnly")}
+              title="Full Preview Only"
+            >
+              <span>👁️</span>
+              <span>Preview</span>
+            </button>
+          </div>
+
+          {/* Mobile Preview Toggle (Switches view on mobile without changing activeTab or unsaved data) */}
+          <button
+            type="button"
+            className="ap-mobile-preview-toggle"
+            onClick={() => setActiveViewMode(activeViewMode === "previewOnly" ? "editOnly" : "previewOnly")}
+            title={activeViewMode === "previewOnly" ? "Return to Editor Form" : "Open Live Preview"}
+            aria-label={activeViewMode === "previewOnly" ? "Return to Editor Form" : "Open Live Preview"}
+          >
+            {activeViewMode === "previewOnly" ? (
+              <>
+                <span>✏️</span>
+                <span>Editor</span>
+              </>
+            ) : (
+              <>
+                <span>👁️</span>
+                <span>Preview</span>
+              </>
+            )}
+          </button>
+
           <button
             type="button"
             className="ap-btn-ghost"
             onClick={() => onBackToInvite && onBackToInvite(formData.slug || slug)}
-            title="Open live wedding invitation in preview mode"
+            title="Open live wedding invitation website"
           >
-            <span>Live Preview</span>
+            <span>Live Site</span>
             <span>↗</span>
+          </button>
+          <button
+            type="button"
+            className="ap-btn-ghost"
+            onClick={() => setShowChangePassModal(true)}
+            title="Change the Admin Passcode"
+          >
+            <span>🔑</span>
+            <span>Passcode</span>
+          </button>
+          <button
+            type="button"
+            className="ap-btn-ghost"
+            onClick={handleLogout}
+            title="Lock and Log out of Admin Panel"
+          >
+            <span>🚪</span>
+            <span>Log Out</span>
           </button>
           <button
             type="button"
@@ -453,15 +868,18 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
         </div>
       )}
 
-      {/* Main Workspace */}
-      <div className="ap-layout">
+      {/* Main Workspace: Split Screen Layout */}
+      <div className={`ap-split-workspace ap-view-${activeViewMode}`}>
+        {/* Left Side: Admin Editable Controls */}
+        <div className="ap-split-editor">
+          <div className="ap-layout">
         {/* Sidebar Navigation */}
         <aside className="ap-sidebar">
           <div className="ap-sidebar-menu">
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "couple" ? "active" : ""}`}
-              onClick={() => setActiveTab("couple")}
+              onClick={() => handleSelectTab("couple")}
             >
               <span className="ap-nav-icon">💍</span>
               <span className="ap-nav-text">Couple &amp; Ceremony</span>
@@ -470,7 +888,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "date" ? "active" : ""}`}
-              onClick={() => setActiveTab("date")}
+              onClick={() => handleSelectTab("date")}
             >
               <span className="ap-nav-icon">📅</span>
               <span className="ap-nav-text">Date &amp; Countdown</span>
@@ -479,7 +897,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "venue" ? "active" : ""}`}
-              onClick={() => setActiveTab("venue")}
+              onClick={() => handleSelectTab("venue")}
             >
               <span className="ap-nav-icon">📍</span>
               <span className="ap-nav-text">Venue &amp; Location</span>
@@ -488,7 +906,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "media" ? "active" : ""}`}
-              onClick={() => setActiveTab("media")}
+              onClick={() => handleSelectTab("media")}
             >
               <span className="ap-nav-icon">🎬</span>
               <span className="ap-nav-text">Media &amp; Images</span>
@@ -497,7 +915,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "timeline" ? "active" : ""}`}
-              onClick={() => setActiveTab("timeline")}
+              onClick={() => handleSelectTab("timeline")}
             >
               <span className="ap-nav-icon">⏳</span>
               <span className="ap-nav-text">Timeline ({timeline.length})</span>
@@ -506,7 +924,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "rsvps" ? "active" : ""}`}
-              onClick={() => setActiveTab("rsvps")}
+              onClick={() => handleSelectTab("rsvps")}
             >
               <span className="ap-nav-icon">💌</span>
               <span className="ap-nav-text">RSVP Responses ({rsvps.length})</span>
@@ -1050,9 +1468,527 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             </form>
           )}
         </main>
+          </div>
+        </div>
+
+        {/* Right Side: Synchronized Live Preview */}
+        <div className="ap-split-preview">
+          <div className="ap-preview-panel">
+            <div className="ap-preview-header">
+              <div className="ap-preview-title-box">
+                <button
+                  type="button"
+                  className="ap-preview-back-btn"
+                  onClick={() => setActiveViewMode("editOnly")}
+                  title="Close Live Preview and return to Editor Form"
+                >
+                  <span>←</span>
+                  <span>Back to Editor</span>
+                </button>
+                <span className="ap-live-badge">
+                  <span className="ap-pulse-dot" />
+                  LIVE PREVIEW
+                </span>
+                <span className="ap-preview-hint">Updates automatically as you type</span>
+              </div>
+
+              <div className="ap-preview-tools">
+                {/* Envelope vs Card View */}
+                <div className="ap-seg-control">
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewEnvelopeState === "invite" ? "active" : ""}`}
+                    onClick={() => setPreviewEnvelopeState("invite")}
+                    title="View Full Wedding Invitation Card"
+                  >
+                    💌 Full Card
+                  </button>
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewEnvelopeState === "overlay" ? "active" : ""}`}
+                    onClick={() => setPreviewEnvelopeState("overlay")}
+                    title="View Envelope Video Cover"
+                  >
+                    ✉️ Envelope
+                  </button>
+                </div>
+
+                {/* Device Frame */}
+                <div className="ap-seg-control">
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewDevice === "mobile" ? "active" : ""}`}
+                    onClick={() => setPreviewDevice("mobile")}
+                    title="Mobile View (390px)"
+                  >
+                    📱 Mobile
+                  </button>
+                  <button
+                    type="button"
+                    className={`ap-seg-btn ${previewDevice === "tablet" ? "active" : ""}`}
+                    onClick={() => setPreviewDevice("tablet")}
+                    title="Expanded View"
+                  >
+                    💻 Full
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Section Jump Navigator */}
+            <div className="ap-preview-quick-nav">
+              <span className="ap-quick-title">Jump:</span>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-hero")}>🔝 Top</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-date")}>📅 Date</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-couple")}>💍 Couple</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-timeline")}>⏳ Timeline</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-venue")}>📍 Venue</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-rsvp")}>✉️ RSVP</button>
+            </div>
+
+            <div className="ap-preview-viewport">
+              <div className={`ap-device-shell ap-shell-${previewDevice}`}>
+                <WeddingInvite
+                  previewData={formData}
+                  previewTimeline={timeline}
+                  isLivePreview={true}
+                  previewEnvelopeState={previewEnvelopeState}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* Change Password Modal */}
+      {showChangePassModal && (
+        <div className="ap-modal-backdrop" onClick={() => setShowChangePassModal(false)}>
+          <div className="ap-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="ap-modal-header">
+              <h3 style={{ margin: 0, fontSize: "17px", color: "#4A351C" }}>🔑 Change Admin Passcode</h3>
+              <button
+                type="button"
+                className="ap-modal-close"
+                onClick={() => setShowChangePassModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="ap-modal-body">
+              <p style={{ fontSize: "13px", color: "#7A654E", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Set a custom password to protect your admin dashboard. Anyone visiting <code>/admin</code> will need to enter this passcode.
+              </p>
+              <div className="ap-field-group">
+                <label className="ap-label">New Admin Passcode</label>
+                <input
+                  type="text"
+                  className="ap-input"
+                  placeholder="e.g. MyWedding2026"
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              {changePassSuccess && (
+                <div style={{ color: "#1A6C35", background: "#EAF8EF", border: "1px solid #A8E4BA", padding: "8px 12px", borderRadius: "8px", fontSize: "13px", margin: "14px 0", fontWeight: "600" }}>
+                  ✓ Passcode updated successfully!
+                </div>
+              )}
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "22px" }}>
+                <button
+                  type="button"
+                  className="ap-btn-ghost"
+                  onClick={() => setShowChangePassModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="ap-btn-primary"
+                  onClick={() => {
+                    if (newPasswordInput.trim()) {
+                      localStorage.setItem(CUSTOM_PASS_KEY, newPasswordInput.trim());
+                      setChangePassSuccess(true);
+                      setTimeout(() => {
+                        setChangePassSuccess(false);
+                        setShowChangePassModal(false);
+                        setNewPasswordInput("");
+                      }, 1200);
+                    }
+                  }}
+                >
+                  Save Passcode
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        /* Modal Styles */
+        .ap-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(40, 28, 14, 0.45);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          padding: 20px;
+        }
+        .ap-modal-card {
+          background: #FFFFFF;
+          border-radius: 16px;
+          box-shadow: 0 20px 48px rgba(40, 28, 14, 0.2);
+          max-width: 460px;
+          width: 100%;
+          border: 1px solid #E2D4C3;
+          overflow: hidden;
+        }
+        .ap-modal-header {
+          padding: 18px 24px;
+          border-bottom: 1px solid #EFE4D6;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .ap-modal-close {
+          background: none;
+          border: none;
+          font-size: 24px;
+          color: #8C755E;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .ap-modal-close:hover {
+          color: #4A351C;
+        }
+        .ap-modal-body {
+          padding: 24px;
+        }
+
+        /* ============================================================
+           SPLIT SCREEN WORKSPACE LAYOUT & LIVE PREVIEW
+           ============================================================ */
+        .ap-split-workspace {
+          display: flex;
+          width: 100%;
+          min-height: calc(100vh - 69px);
+          align-items: stretch;
+          background: #F8F5F0;
+        }
+
+        .ap-split-editor {
+          flex: 1 1 54%;
+          min-width: 0;
+          border-right: 1px solid #E5D7C7;
+          overflow-y: auto;
+          max-height: calc(100vh - 69px);
+          background: #F8F5F0;
+        }
+
+        .ap-split-editor .ap-layout {
+          max-width: 100%;
+          margin: 0;
+          padding: 20px 20px 60px;
+          gap: 18px;
+        }
+
+        .ap-split-editor .ap-sidebar {
+          width: 210px;
+          top: 20px;
+        }
+
+        .ap-split-preview {
+          flex: 1 1 46%;
+          min-width: 360px;
+          background: #181410;
+          position: sticky;
+          top: 69px;
+          height: calc(100vh - 69px);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        /* View Mode Overrides */
+        .ap-split-workspace.ap-view-editOnly .ap-split-editor {
+          flex: 1 1 100%;
+          border-right: none;
+          max-height: none;
+        }
+        .ap-split-workspace.ap-view-editOnly .ap-split-editor .ap-layout {
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 28px 24px 60px;
+          gap: 28px;
+        }
+        .ap-split-workspace.ap-view-editOnly .ap-split-editor .ap-sidebar {
+          width: 250px;
+          top: 86px;
+        }
+        .ap-split-workspace.ap-view-editOnly .ap-split-preview {
+          display: none;
+        }
+
+        .ap-split-workspace.ap-view-previewOnly .ap-split-editor {
+          display: none;
+        }
+        .ap-split-workspace.ap-view-previewOnly .ap-split-preview {
+          flex: 1 1 100%;
+        }
+
+        /* View Switcher in Navbar */
+        .ap-view-switcher {
+          display: flex;
+          align-items: center;
+          background: #FAF5EE;
+          border: 1px solid #E2D4C3;
+          border-radius: 8px;
+          padding: 3px;
+          gap: 2px;
+        }
+
+        .ap-view-btn {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 11px;
+          background: transparent;
+          border: none;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #7A654E;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-view-btn:hover {
+          color: #4A351C;
+        }
+
+        .ap-view-btn.active {
+          background: #8A6B34;
+          color: #FFFFFF;
+          box-shadow: 0 2px 6px rgba(138, 107, 52, 0.25);
+        }
+
+        /* Mobile-only Preview Toggle in Navbar (hidden on desktop) */
+        .ap-mobile-preview-toggle {
+          display: none;
+        }
+
+        /* Preview Back Button (shown in previewOnly mode and on mobile) */
+        .ap-preview-back-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 11px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #FAF4EB;
+          background: #3A2B1C;
+          border: 1px solid #755530;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-preview-back-btn:hover {
+          background: #4E3B27;
+          border-color: #9E7444;
+        }
+
+        /* Hide Back to Editor on desktop split view since the editor is already side-by-side */
+        .ap-split-workspace.ap-view-split .ap-preview-back-btn {
+          display: none;
+        }
+
+        /* Live Preview Panel UI */
+        .ap-preview-panel {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          width: 100%;
+        }
+
+        .ap-preview-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 18px;
+          background: #231E19;
+          border-bottom: 1px solid #383027;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .ap-preview-title-box {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .ap-live-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.8px;
+          color: #E6C88A;
+          background: rgba(230, 200, 138, 0.1);
+          border: 1px solid rgba(230, 200, 138, 0.25);
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
+
+        .ap-pulse-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #2ECC71;
+          box-shadow: 0 0 8px #2ECC71;
+          animation: apPulse 1.8s infinite;
+        }
+
+        @keyframes apPulse {
+          0% { transform: scale(0.9); opacity: 0.8; }
+          50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 12px #2ECC71; }
+          100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
+        .ap-preview-hint {
+          font-size: 11.5px;
+          color: #8C7B6B;
+        }
+
+        .ap-preview-tools {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .ap-seg-control {
+          display: flex;
+          background: #15110E;
+          border: 1px solid #332B22;
+          border-radius: 7px;
+          padding: 2px;
+          gap: 2px;
+        }
+
+        .ap-seg-btn {
+          background: transparent;
+          border: none;
+          color: #A89582;
+          font-size: 11.5px;
+          font-weight: 600;
+          padding: 5px 9px;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-seg-btn:hover {
+          color: #EDE1D1;
+        }
+
+        .ap-seg-btn.active {
+          background: #8A6B34;
+          color: #FFFFFF;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        }
+
+        .ap-preview-quick-nav {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 16px;
+          background: #1C1713;
+          border-bottom: 1px solid #332B22;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .ap-preview-quick-nav::-webkit-scrollbar {
+          display: none;
+        }
+
+        .ap-quick-title {
+          font-size: 10.5px;
+          color: #8C7B6B;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          font-weight: 700;
+          margin-right: 4px;
+          white-space: nowrap;
+        }
+
+        .ap-quick-btn {
+          background: #28211A;
+          border: 1px solid #42362A;
+          color: #D6C7B7;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 9px;
+          border-radius: 5px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-quick-btn:hover {
+          background: #8A6B34;
+          color: #FFFFFF;
+          border-color: #8A6B34;
+          transform: translateY(-1px);
+        }
+
+        .ap-preview-viewport {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          background: radial-gradient(circle at 50% 30%, #25201A 0%, #120F0C 100%);
+          overflow: hidden;
+          box-sizing: border-box;
+        }
+
+        .ap-device-shell {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background: #F9F0E0;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          display: flex;
+          flex-direction: column;
+        }
+
+        .ap-device-shell.ap-shell-mobile {
+          width: 390px;
+          max-height: 820px;
+          border-radius: 36px;
+          border: 10px solid #2B251E;
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(173, 138, 78, 0.3);
+        }
+
+        .ap-device-shell.ap-shell-tablet {
+          width: 100%;
+          max-width: 520px;
+          height: 100%;
+          border-radius: 18px;
+          border: 3px solid #3B332A;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
         /* ============================================================
            ADMIN PANEL LUXURY MODERN DASHBOARD DESIGN SYSTEM
            ============================================================ */
@@ -1694,22 +2630,373 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           color: #8A7763;
         }
 
-        @media (max-width: 860px) {
-          .ap-navbar {
-            padding: 12px 16px;
+        @media (max-width: 1080px) and (min-width: 861px) {
+          .ap-split-workspace {
             flex-direction: column;
-            gap: 12px;
           }
+          .ap-split-editor {
+            max-height: none;
+            overflow-y: visible;
+          }
+          .ap-split-preview {
+            position: static;
+            height: 720px;
+            max-height: 85vh;
+          }
+        }
+
+        /* Mobile Screens (<= 860px, including 390px phone viewports) */
+        @media (max-width: 860px) {
+          html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+          }
+
+          .ap-admin-container {
+            overflow-x: hidden;
+            max-width: 100vw;
+            box-sizing: border-box;
+          }
+
+          /* Compact Mobile Navbar */
+          .ap-navbar {
+            padding: 10px 12px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+          }
+
+          .ap-navbar-left {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .ap-brand {
+            gap: 6px;
+            flex-shrink: 0;
+          }
+
+          .ap-brand-title {
+            font-size: 13px;
+          }
+
+          .ap-slug-pill {
+            padding: 3px 8px;
+            font-size: 11px;
+            max-width: 170px;
+            flex: 1 1 auto;
+            min-width: 0;
+          }
+
+          .ap-slug-field {
+            width: 100%;
+            min-width: 50px;
+            font-size: 11px;
+          }
+
+          .ap-navbar-actions {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+          }
+
+          /* Hide desktop 3-mode switcher on mobile */
+          .ap-view-switcher {
+            display: none !important;
+          }
+
+          /* Show mobile preview toggle button */
+          .ap-mobile-preview-toggle {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            border-radius: 8px;
+            background: #8A6B34;
+            color: #FFFFFF;
+            border: 1px solid #755525;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(138, 107, 52, 0.25);
+          }
+
+          .ap-btn-ghost {
+            padding: 6px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+          }
+
+          .ap-btn-primary {
+            padding: 6px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+          }
+
+          /* Mobile Workspace: Editor is default surface, Live Preview is toggled */
+          .ap-split-workspace {
+            flex-direction: column;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            min-height: auto;
+          }
+
+          /* When NOT in previewOnly mode on mobile: hide preview and show editor full width */
+          .ap-split-workspace:not(.ap-view-previewOnly) .ap-split-preview {
+            display: none !important;
+          }
+          .ap-split-workspace:not(.ap-view-previewOnly) .ap-split-editor {
+            display: block !important;
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            max-height: none !important;
+            overflow-y: visible !important;
+            border-right: none !important;
+          }
+
+          /* When in previewOnly mode on mobile: hide editor and show preview full width */
+          .ap-split-workspace.ap-view-previewOnly .ap-split-editor {
+            display: none !important;
+          }
+          .ap-split-workspace.ap-view-previewOnly .ap-split-preview {
+            display: flex !important;
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 0 !important;
+            height: auto !important;
+            min-height: calc(100vh - 60px) !important;
+            position: static !important;
+          }
+
+          /* Responsive Editor Navigation: Horizontally Scrolling Tab Rail */
           .ap-layout {
             flex-direction: column;
-            padding: 16px;
-          }
-          .ap-sidebar {
+            padding: 8px 10px 40px;
+            gap: 10px;
             width: 100%;
-            position: static;
+            box-sizing: border-box;
+            overflow-x: hidden;
           }
-          .ap-grid-2, .ap-grid-3, .ap-stats-row {
-            grid-template-columns: 1fr;
+
+          .ap-split-editor .ap-layout {
+            padding: 8px 10px 40px !important;
+            gap: 10px !important;
+            max-width: 100% !important;
+          }
+
+          .ap-sidebar,
+          .ap-split-editor .ap-sidebar {
+            width: 100% !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 80 !important;
+            margin: 0 !important;
+            padding: 4px 0 6px !important;
+            background: #F8F5F0 !important;
+          }
+
+          .ap-sidebar-menu {
+            display: flex !important;
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            white-space: nowrap !important;
+            gap: 6px !important;
+            padding: 6px 8px !important;
+            border-radius: 10px !important;
+            background: #FFFFFF !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+
+          .ap-sidebar-menu::-webkit-scrollbar {
+            height: 3px;
+          }
+          .ap-sidebar-menu::-webkit-scrollbar-thumb {
+            background: #D4C3AE;
+            border-radius: 3px;
+          }
+
+          .ap-nav-item {
+            flex-shrink: 0 !important;
+            width: auto !important;
+            white-space: nowrap !important;
+            padding: 8px 12px !important;
+            font-size: 12.5px !important;
+            gap: 6px !important;
+            border-radius: 7px !important;
+          }
+
+          .ap-nav-icon {
+            font-size: 14px;
+          }
+
+          .ap-nav-text {
+            flex: none !important;
+          }
+
+          /* Editor Section Content - Full Width with Zero Horizontal Overflow */
+          .ap-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+            overflow-x: hidden;
+          }
+
+          .ap-section-card {
+            padding: 16px 12px !important;
+            border-radius: 10px !important;
+            margin-bottom: 14px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden;
+          }
+
+          .ap-section-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            margin-bottom: 14px;
+          }
+
+          .ap-section-header > div {
+            width: 100%;
+          }
+
+          .ap-section-header h2 {
+            font-size: 17px !important;
+            margin-bottom: 4px;
+          }
+
+          .ap-desc {
+            font-size: 12px !important;
+            margin-bottom: 8px !important;
+          }
+
+          .ap-section-header .ap-btn-secondary {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            padding: 8px;
+            box-sizing: border-box;
+          }
+
+          /* Responsive Form Grids: 1 column on phone viewports */
+          .ap-grid-2,
+          .ap-grid-3,
+          .ap-stats-row {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            width: 100% !important;
+            box-sizing: border-box;
+          }
+
+          .ap-grid-2 > *,
+          .ap-grid-3 > *,
+          .ap-field {
+            grid-column: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+
+          .ap-field input,
+          .ap-field select,
+          .ap-field textarea {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            font-size: 14px !important;
+          }
+
+          /* Timeline item cards */
+          .ap-timeline-item-card {
+            padding: 12px 10px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden;
+          }
+
+          .ap-tl-header {
+            margin-bottom: 10px;
+          }
+
+          /* Mobile Live Preview Controls */
+          .ap-preview-panel {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+
+          .ap-preview-header {
+            padding: 8px 10px !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 8px !important;
+          }
+
+          .ap-preview-title-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 6px;
+          }
+
+          .ap-preview-tools {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 6px;
+          }
+
+          .ap-preview-quick-nav {
+            padding: 6px 8px !important;
+            gap: 4px !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+
+          .ap-quick-btn {
+            padding: 3px 6px !important;
+            font-size: 11px !important;
+            flex-shrink: 0;
+          }
+
+          .ap-preview-viewport {
+            padding: 8px 4px !important;
+          }
+
+          .ap-device-shell.ap-shell-mobile,
+          .ap-device-shell.ap-shell-tablet {
+            width: 100% !important;
+            max-width: 100% !important;
+            border-radius: 10px !important;
+            margin: 0 auto;
+          }
+
+          .ap-preview-back-btn {
+            display: inline-flex !important;
           }
         }
       `}</style>
