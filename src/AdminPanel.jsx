@@ -756,7 +756,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
         </div>
 
         <div className="ap-navbar-actions">
-          {/* View Mode Switcher: Split View / Edit Only / Preview Only */}
+          {/* View Mode Switcher: Split View / Edit Only / Preview Only (Desktop) */}
           <div className="ap-view-switcher">
             <button
               type="button"
@@ -786,6 +786,27 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
               <span>Preview</span>
             </button>
           </div>
+
+          {/* Mobile Preview Toggle (Switches view on mobile without changing activeTab or unsaved data) */}
+          <button
+            type="button"
+            className="ap-mobile-preview-toggle"
+            onClick={() => setActiveViewMode(activeViewMode === "previewOnly" ? "editOnly" : "previewOnly")}
+            title={activeViewMode === "previewOnly" ? "Return to Editor Form" : "Open Live Preview"}
+            aria-label={activeViewMode === "previewOnly" ? "Return to Editor Form" : "Open Live Preview"}
+          >
+            {activeViewMode === "previewOnly" ? (
+              <>
+                <span>✏️</span>
+                <span>Editor</span>
+              </>
+            ) : (
+              <>
+                <span>👁️</span>
+                <span>Preview</span>
+              </>
+            )}
+          </button>
 
           <button
             type="button"
@@ -1455,6 +1476,15 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           <div className="ap-preview-panel">
             <div className="ap-preview-header">
               <div className="ap-preview-title-box">
+                <button
+                  type="button"
+                  className="ap-preview-back-btn"
+                  onClick={() => setActiveViewMode("editOnly")}
+                  title="Close Live Preview and return to Editor Form"
+                >
+                  <span>←</span>
+                  <span>Back to Editor</span>
+                </button>
                 <span className="ap-live-badge">
                   <span className="ap-pulse-dot" />
                   LIVE PREVIEW
@@ -1745,6 +1775,38 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           background: #8A6B34;
           color: #FFFFFF;
           box-shadow: 0 2px 6px rgba(138, 107, 52, 0.25);
+        }
+
+        /* Mobile-only Preview Toggle in Navbar (hidden on desktop) */
+        .ap-mobile-preview-toggle {
+          display: none;
+        }
+
+        /* Preview Back Button (shown in previewOnly mode and on mobile) */
+        .ap-preview-back-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 11px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #FAF4EB;
+          background: #3A2B1C;
+          border: 1px solid #755530;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-preview-back-btn:hover {
+          background: #4E3B27;
+          border-color: #9E7444;
+        }
+
+        /* Hide Back to Editor on desktop split view since the editor is already side-by-side */
+        .ap-split-workspace.ap-view-split .ap-preview-back-btn {
+          display: none;
         }
 
         /* Live Preview Panel UI */
@@ -2568,7 +2630,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           color: #8A7763;
         }
 
-        @media (max-width: 1080px) {
+        @media (max-width: 1080px) and (min-width: 861px) {
           .ap-split-workspace {
             flex-direction: column;
           }
@@ -2583,22 +2645,358 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           }
         }
 
+        /* Mobile Screens (<= 860px, including 390px phone viewports) */
         @media (max-width: 860px) {
-          .ap-navbar {
-            padding: 12px 16px;
-            flex-direction: column;
-            gap: 12px;
+          html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
           }
+
+          .ap-admin-container {
+            overflow-x: hidden;
+            max-width: 100vw;
+            box-sizing: border-box;
+          }
+
+          /* Compact Mobile Navbar */
+          .ap-navbar {
+            padding: 10px 12px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+          }
+
+          .ap-navbar-left {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .ap-brand {
+            gap: 6px;
+            flex-shrink: 0;
+          }
+
+          .ap-brand-title {
+            font-size: 13px;
+          }
+
+          .ap-slug-pill {
+            padding: 3px 8px;
+            font-size: 11px;
+            max-width: 170px;
+            flex: 1 1 auto;
+            min-width: 0;
+          }
+
+          .ap-slug-field {
+            width: 100%;
+            min-width: 50px;
+            font-size: 11px;
+          }
+
+          .ap-navbar-actions {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+          }
+
+          /* Hide desktop 3-mode switcher on mobile */
+          .ap-view-switcher {
+            display: none !important;
+          }
+
+          /* Show mobile preview toggle button */
+          .ap-mobile-preview-toggle {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            border-radius: 8px;
+            background: #8A6B34;
+            color: #FFFFFF;
+            border: 1px solid #755525;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(138, 107, 52, 0.25);
+          }
+
+          .ap-btn-ghost {
+            padding: 6px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+          }
+
+          .ap-btn-primary {
+            padding: 6px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+          }
+
+          /* Mobile Workspace: Editor is default surface, Live Preview is toggled */
+          .ap-split-workspace {
+            flex-direction: column;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            min-height: auto;
+          }
+
+          /* When NOT in previewOnly mode on mobile: hide preview and show editor full width */
+          .ap-split-workspace:not(.ap-view-previewOnly) .ap-split-preview {
+            display: none !important;
+          }
+          .ap-split-workspace:not(.ap-view-previewOnly) .ap-split-editor {
+            display: block !important;
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            max-height: none !important;
+            overflow-y: visible !important;
+            border-right: none !important;
+          }
+
+          /* When in previewOnly mode on mobile: hide editor and show preview full width */
+          .ap-split-workspace.ap-view-previewOnly .ap-split-editor {
+            display: none !important;
+          }
+          .ap-split-workspace.ap-view-previewOnly .ap-split-preview {
+            display: flex !important;
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 0 !important;
+            height: auto !important;
+            min-height: calc(100vh - 60px) !important;
+            position: static !important;
+          }
+
+          /* Responsive Editor Navigation: Horizontally Scrolling Tab Rail */
           .ap-layout {
             flex-direction: column;
-            padding: 16px;
-          }
-          .ap-sidebar {
+            padding: 8px 10px 40px;
+            gap: 10px;
             width: 100%;
-            position: static;
+            box-sizing: border-box;
+            overflow-x: hidden;
           }
-          .ap-grid-2, .ap-grid-3, .ap-stats-row {
-            grid-template-columns: 1fr;
+
+          .ap-split-editor .ap-layout {
+            padding: 8px 10px 40px !important;
+            gap: 10px !important;
+            max-width: 100% !important;
+          }
+
+          .ap-sidebar,
+          .ap-split-editor .ap-sidebar {
+            width: 100% !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 80 !important;
+            margin: 0 !important;
+            padding: 4px 0 6px !important;
+            background: #F8F5F0 !important;
+          }
+
+          .ap-sidebar-menu {
+            display: flex !important;
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            white-space: nowrap !important;
+            gap: 6px !important;
+            padding: 6px 8px !important;
+            border-radius: 10px !important;
+            background: #FFFFFF !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+
+          .ap-sidebar-menu::-webkit-scrollbar {
+            height: 3px;
+          }
+          .ap-sidebar-menu::-webkit-scrollbar-thumb {
+            background: #D4C3AE;
+            border-radius: 3px;
+          }
+
+          .ap-nav-item {
+            flex-shrink: 0 !important;
+            width: auto !important;
+            white-space: nowrap !important;
+            padding: 8px 12px !important;
+            font-size: 12.5px !important;
+            gap: 6px !important;
+            border-radius: 7px !important;
+          }
+
+          .ap-nav-icon {
+            font-size: 14px;
+          }
+
+          .ap-nav-text {
+            flex: none !important;
+          }
+
+          /* Editor Section Content - Full Width with Zero Horizontal Overflow */
+          .ap-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+            overflow-x: hidden;
+          }
+
+          .ap-section-card {
+            padding: 16px 12px !important;
+            border-radius: 10px !important;
+            margin-bottom: 14px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden;
+          }
+
+          .ap-section-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            margin-bottom: 14px;
+          }
+
+          .ap-section-header > div {
+            width: 100%;
+          }
+
+          .ap-section-header h2 {
+            font-size: 17px !important;
+            margin-bottom: 4px;
+          }
+
+          .ap-desc {
+            font-size: 12px !important;
+            margin-bottom: 8px !important;
+          }
+
+          .ap-section-header .ap-btn-secondary {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            padding: 8px;
+            box-sizing: border-box;
+          }
+
+          /* Responsive Form Grids: 1 column on phone viewports */
+          .ap-grid-2,
+          .ap-grid-3,
+          .ap-stats-row {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            width: 100% !important;
+            box-sizing: border-box;
+          }
+
+          .ap-grid-2 > *,
+          .ap-grid-3 > *,
+          .ap-field {
+            grid-column: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+
+          .ap-field input,
+          .ap-field select,
+          .ap-field textarea {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            font-size: 14px !important;
+          }
+
+          /* Timeline item cards */
+          .ap-timeline-item-card {
+            padding: 12px 10px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden;
+          }
+
+          .ap-tl-header {
+            margin-bottom: 10px;
+          }
+
+          /* Mobile Live Preview Controls */
+          .ap-preview-panel {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+
+          .ap-preview-header {
+            padding: 8px 10px !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 8px !important;
+          }
+
+          .ap-preview-title-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 6px;
+          }
+
+          .ap-preview-tools {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 6px;
+          }
+
+          .ap-preview-quick-nav {
+            padding: 6px 8px !important;
+            gap: 4px !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+
+          .ap-quick-btn {
+            padding: 3px 6px !important;
+            font-size: 11px !important;
+            flex-shrink: 0;
+          }
+
+          .ap-preview-viewport {
+            padding: 8px 4px !important;
+          }
+
+          .ap-device-shell.ap-shell-mobile,
+          .ap-device-shell.ap-shell-tablet {
+            width: 100% !important;
+            max-width: 100% !important;
+            border-radius: 10px !important;
+            margin: 0 auto;
+          }
+
+          .ap-preview-back-btn {
+            display: inline-flex !important;
           }
         }
       `}</style>
