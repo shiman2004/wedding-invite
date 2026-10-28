@@ -157,6 +157,42 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
   const [previewEnvelopeState, setPreviewEnvelopeState] = useState("invite"); // "invite" | "overlay"
   const [activeViewMode, setActiveViewMode] = useState("split"); // "split" | "editOnly" | "previewOnly"
 
+  const scrollToPreviewSection = (sectionId) => {
+    if (previewEnvelopeState === "overlay") {
+      setPreviewEnvelopeState("invite");
+    }
+    setTimeout(() => {
+      const container = document.querySelector(".wi-root.wi-in-preview");
+      const target = document.getElementById(sectionId);
+      if (container && target) {
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const offset = targetRect.top - containerRect.top + container.scrollTop;
+        container.scrollTo({
+          top: offset - 8,
+          behavior: "smooth",
+        });
+      } else if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
+
+  const handleSelectTab = (tabName) => {
+    setActiveTab(tabName);
+    const map = {
+      couple: "preview-couple",
+      date: "preview-date",
+      venue: "preview-venue",
+      media: "preview-hero",
+      timeline: "preview-timeline",
+      rsvps: "preview-rsvp",
+    };
+    if (map[tabName]) {
+      scrollToPreviewSection(map[tabName]);
+    }
+  };
+
   const handleLogin = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     const input = passwordInput.trim();
@@ -822,7 +858,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "couple" ? "active" : ""}`}
-              onClick={() => setActiveTab("couple")}
+              onClick={() => handleSelectTab("couple")}
             >
               <span className="ap-nav-icon">💍</span>
               <span className="ap-nav-text">Couple &amp; Ceremony</span>
@@ -831,7 +867,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "date" ? "active" : ""}`}
-              onClick={() => setActiveTab("date")}
+              onClick={() => handleSelectTab("date")}
             >
               <span className="ap-nav-icon">📅</span>
               <span className="ap-nav-text">Date &amp; Countdown</span>
@@ -840,7 +876,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "venue" ? "active" : ""}`}
-              onClick={() => setActiveTab("venue")}
+              onClick={() => handleSelectTab("venue")}
             >
               <span className="ap-nav-icon">📍</span>
               <span className="ap-nav-text">Venue &amp; Location</span>
@@ -849,7 +885,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "media" ? "active" : ""}`}
-              onClick={() => setActiveTab("media")}
+              onClick={() => handleSelectTab("media")}
             >
               <span className="ap-nav-icon">🎬</span>
               <span className="ap-nav-text">Media &amp; Images</span>
@@ -858,7 +894,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "timeline" ? "active" : ""}`}
-              onClick={() => setActiveTab("timeline")}
+              onClick={() => handleSelectTab("timeline")}
             >
               <span className="ap-nav-icon">⏳</span>
               <span className="ap-nav-text">Timeline ({timeline.length})</span>
@@ -867,7 +903,7 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
             <button
               type="button"
               className={`ap-nav-item ${activeTab === "rsvps" ? "active" : ""}`}
-              onClick={() => setActiveTab("rsvps")}
+              onClick={() => handleSelectTab("rsvps")}
             >
               <span className="ap-nav-icon">💌</span>
               <span className="ap-nav-text">RSVP Responses ({rsvps.length})</span>
@@ -1469,6 +1505,17 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
               </div>
             </div>
 
+            {/* Quick Section Jump Navigator */}
+            <div className="ap-preview-quick-nav">
+              <span className="ap-quick-title">Jump:</span>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-hero")}>🔝 Top</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-date")}>📅 Date</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-couple")}>💍 Couple</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-timeline")}>⏳ Timeline</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-venue")}>📍 Venue</button>
+              <button type="button" className="ap-quick-btn" onClick={() => scrollToPreviewSection("preview-rsvp")}>✉️ RSVP</button>
+            </div>
+
             <div className="ap-preview-viewport">
               <div className={`ap-device-shell ap-shell-${previewDevice}`}>
                 <WeddingInvite
@@ -1795,6 +1842,51 @@ export default function AdminPanel({ onBackToInvite, initialSlug }) {
           background: #8A6B34;
           color: #FFFFFF;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        }
+
+        .ap-preview-quick-nav {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 16px;
+          background: #1C1713;
+          border-bottom: 1px solid #332B22;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .ap-preview-quick-nav::-webkit-scrollbar {
+          display: none;
+        }
+
+        .ap-quick-title {
+          font-size: 10.5px;
+          color: #8C7B6B;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          font-weight: 700;
+          margin-right: 4px;
+          white-space: nowrap;
+        }
+
+        .ap-quick-btn {
+          background: #28211A;
+          border: 1px solid #42362A;
+          color: #D6C7B7;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 9px;
+          border-radius: 5px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease;
+          font-family: inherit;
+        }
+
+        .ap-quick-btn:hover {
+          background: #8A6B34;
+          color: #FFFFFF;
+          border-color: #8A6B34;
+          transform: translateY(-1px);
         }
 
         .ap-preview-viewport {

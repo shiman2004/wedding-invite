@@ -118,13 +118,30 @@ body {
 
 /* Scoped Live Preview inside Admin Dashboard */
 .wi-root.wi-in-preview {
-  min-height: 100% !important;
+  display: block !important;
+  width: 100% !important;
   height: 100% !important;
+  max-height: 100% !important;
   position: relative !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scroll-behavior: smooth !important;
   background: transparent !important;
-  align-items: stretch !important;
+}
+
+.wi-root.wi-in-preview::-webkit-scrollbar {
+  width: 6px !important;
+}
+.wi-root.wi-in-preview::-webkit-scrollbar-track {
+  background: rgba(138, 107, 52, 0.08) !important;
+}
+.wi-root.wi-in-preview::-webkit-scrollbar-thumb {
+  background: #8A6B34 !important;
+  border-radius: 4px !important;
+}
+.wi-root.wi-in-preview::-webkit-scrollbar-thumb:hover {
+  background: #6E5330 !important;
 }
 
 .wi-root.wi-in-preview .wei-overlay {
@@ -149,8 +166,37 @@ body {
 
 .wi-root.wi-in-preview .wi-frame {
   margin: 0 auto !important;
-  min-height: 100% !important;
+  min-height: auto !important;
+  height: auto !important;
+  overflow: visible !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.wi-root.wi-in-preview .wi-hero {
+  height: auto !important;
+  min-height: 480px !important;
+}
+
+.wi-root.wi-in-preview .wi-content {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.wi-root.wi-in-preview .wi-section,
+.wi-root.wi-in-preview .wi-arch-section,
+.wi-root.wi-in-preview .wi-venue-section,
+.wi-root.wi-in-preview .wi-timeline-section {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+.wi-root.wi-in-preview .wi-tl-spine-line,
+.wi-root.wi-in-preview .wi-tl-row,
+.wi-root.wi-in-preview .wi-tl-node {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
 }
 
 .wi-frame {
@@ -2434,7 +2480,7 @@ export default function WeddingInvite({
           {/* ============================================================
               HERO / FIRST PAGE
              ============================================================ */}
-          <section className="wi-hero" ref={heroRef}>
+          <section className="wi-hero" id="preview-hero" ref={heroRef}>
             {/* Background Looping Video */}
             <div className="wi-hero-video-wrap">
               <video
@@ -2489,7 +2535,7 @@ export default function WeddingInvite({
           {/* ============================================================
               SCRATCH DATE
              ============================================================ */}
-          <section className="wi-section wi-reveal">
+          <section className="wi-section wi-reveal" id="preview-date">
             <h2 className="wi-script-title">The Date</h2>
             <div className="wi-hint">
               <span className="wi-star">✦</span> Scratch to reveal the date <span className="wi-star">✦</span>
@@ -2504,7 +2550,7 @@ export default function WeddingInvite({
           {/* ============================================================
               AUTHENTIC 3D ISLAMIC ARCH INVITATION CARD
              ============================================================ */}
-          <section className="wi-arch-section wi-reveal">
+          <section className="wi-arch-section wi-reveal" id="preview-couple">
             <div className="wi-arch-container">
               {/* 3D Embossed Arch Frame */}
               <img className="wi-arch-frame-bg" src={data.archFrameImg} alt="Islamic Arch Frame" />
@@ -2550,7 +2596,7 @@ export default function WeddingInvite({
           {/* ============================================================
               TIMELINE (AUTHENTIC TIMELESS GRACE & SCROLL-REVEAL)
              ============================================================ */}
-          <section className="wi-section wi-timeline-section wi-reveal">
+          <section className="wi-section wi-timeline-section wi-reveal" id="preview-timeline">
             <h2 className="wi-timeline-script-title">Wedding Timeline</h2>
             {data.timelineFlourish && (
               <div className="wi-timeline-flourish">
@@ -2584,7 +2630,7 @@ export default function WeddingInvite({
           {/* ============================================================
               COUNTDOWN
              ============================================================ */}
-          <section className="wi-section wi-reveal">
+          <section className="wi-section wi-reveal" id="preview-countdown">
             <div className="wi-heading">The Celebration Begins</div>
             <div className="wi-countdown">
               <div className="wi-count-unit">
@@ -2612,7 +2658,7 @@ export default function WeddingInvite({
           {/* ============================================================
               AUTHENTIC TIMELESS GRACE LOCATION & VENUE
              ============================================================ */}
-          <section className="wi-venue-section wi-reveal">
+          <section className="wi-venue-section wi-reveal" id="preview-venue">
             {/* Top-Right Decorative Flower Bouquet */}
             <div className="wi-venue-flower-top-wrapper" ref={venueTopWrapRef}>
               <img className="wi-venue-flower-top" src={data.venueTopFlower || DATA.venueTopFlower} alt="" />
@@ -2660,7 +2706,7 @@ export default function WeddingInvite({
           {/* ============================================================
               RSVP
              ============================================================ */}
-          <section className="wi-section wi-reveal">
+          <section className="wi-section wi-reveal" id="preview-rsvp">
             <div className="wi-heading">Join Our Celebration</div>
             <h2 className="wi-script-title">Confirm Your Attendance</h2>
             <div className="wi-rule" />
